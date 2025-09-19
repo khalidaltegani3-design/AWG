@@ -75,43 +75,52 @@ export default function CreateReportPage() {
     return downloadURL;
   };
   
-  const handleFindQAddress = async () => {
-    if (!zone || !street || !building) {
-        toast({ variant: "destructive", title: "خطأ", description: "يرجى إدخال أرقام المنطقة والشارع والمبنى." });
-        return;
+  async function handleGetLocationFromQNAS(zone: string, street: string, building: string) {
+    toast({ variant: "destructive", title: "فشل تحديد الموقع", description: null });
+
+    // ✅ تحقّق مسبق من المدخلات
+    const z = Number(zone), s = Number(street), b = Number(building);
+    if (!Number.isFinite(z) || !Number.isFinite(s) || !Number.isFinite(b)) {
+      toast({ variant: "destructive", title: "فشل تحديد الموقع", description: 'رجاءً أدخل أرقامًا صحيحة للمنطقة والشارع والمبنى.' });
+      return;
     }
     
     setIsGeocoding(true);
     try {
-      const response = await fetch('/api/qnas/get-location', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ zone, street, building }),
+      const res = await fetch('/api/qnas/get-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zone: z, street: s, building: b }),
       });
 
-      const result = await response.json();
-      
-      if (!response.ok || !result.ok) {
-        throw new Error(result.error || "لم نتمكن من العثور على العنوان. يرجى التحقق من الأرقام.");
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        toast({ variant: "destructive", title: "فشل تحديد الموقع", description: json.error || `فشل جلب الموقع (HTTP ${res.status})` });
+        return;
       }
       
-      if (result.data && result.data.lat && result.data.lng) {
-        setPosition([result.data.lat, result.data.lng]);
+      if (json.data && json.data.lat && json.data.lng) {
+        setPosition([json.data.lat, json.data.lng]);
         toast({ title: "تم تحديد الموقع", description: `تم تحديد الموقع بنجاح للعنوان: ${zone}/${street}/${building}` });
       } else {
-        throw new Error("Invalid response from geocoding service.");
+         toast({ variant: "destructive", title: "فشل تحديد الموقع", description: "Invalid response from geocoding service."});
       }
-    } catch (error: any) {
-        console.error('Geocoding Error:', error);
-        toast({
-            variant: "destructive",
-            title: "فشل تحديد الموقع",
-            description: error.message,
-        });
+
+    } catch (e: any) {
+      console.error('Geocoding Error:', e);
+      toast({ variant: "destructive", title: "فشل تحديد الموقع", description: e?.message ?? 'حدث خطأ غير متوقع أثناء جلب الإحداثيات' });
     } finally {
         setIsGeocoding(false);
     }
-  };
+  }
+
+  const handleFindQAddress = () => {
+    if (!zone || !street || !building) {
+        toast({ variant: "destructive", title: "خطأ", description: "يرجى إدخال أرقام المنطقة والشارع والمبنى." });
+        return;
+    }
+    handleGetLocationFromQNAS(zone,street,building);
+  }
   
   const handleOpenUnwani = () => {
       window.open('https://maps.moi.gov.qa/', '_blank', 'noopener,noreferrer');
@@ -144,7 +153,8 @@ export default function CreateReportPage() {
     setIsSubmitting(true);
 
     try {
-      const newReportRef = doc(collection(db, 'reports'));
+      const reportsCol = collection(db, 'reports');
+      const newReportRef = doc(reportsCol); // auto-id
       const reportId = newReportRef.id;
 
       const attachmentUrls = await Promise.all(
@@ -359,3 +369,5 @@ export default function CreateReportPage() {
     </div>
   );
 }
+
+    
