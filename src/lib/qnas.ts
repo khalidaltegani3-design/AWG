@@ -1,10 +1,13 @@
 // src/lib/qnas.ts (server-only)
 const BASE = process.env.QNAS_API_BASE || 'https://api.qnas.qa/v1';
-const TOKEN = process.env.QNAS_API_TOKEN!;
-const DOMAIN = process.env.QNAS_API_DOMAIN!;
+const TOKEN = process.env.QNAS_API_TOKEN || '';
+const DOMAIN = process.env.QNAS_API_DOMAIN || '';
 const ENFORCE_QATAR_BOUNDS = process.env.QNAS_ENFORCE_QATAR_BOUNDS === '1';
 
 function headers() {
+  if (!TOKEN || !DOMAIN) {
+      throw new Error('QNAS is not configured on the server. Missing API token or domain.');
+  }
   return {
     'X-Token': TOKEN,
     'X-Domain': DOMAIN,
@@ -37,9 +40,6 @@ function parseCoords(j: any): { lat: number; lng: number } {
 }
 
 async function getJSON(path: string) {
-  if (!TOKEN || !DOMAIN) {
-      throw new Error('QNAS API token or domain is not configured in environment variables.');
-  }
   // Normalize Arabic numerals to Western numerals if present
   const normalizeNumerals = (text: string) => {
     return text.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());

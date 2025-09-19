@@ -76,8 +76,6 @@ export default function CreateReportPage() {
   };
   
   async function handleGetLocationFromQNAS(zone: string, street: string, building: string) {
-    toast({ variant: "destructive", title: "فشل تحديد الموقع", description: null });
-
     // ✅ تحقّق مسبق من المدخلات
     const z = Number(zone), s = Number(street), b = Number(building);
     if (!Number.isFinite(z) || !Number.isFinite(s) || !Number.isFinite(b)) {
@@ -108,7 +106,11 @@ export default function CreateReportPage() {
 
     } catch (e: any) {
       console.error('Geocoding Error:', e);
-      toast({ variant: "destructive", title: "فشل تحديد الموقع", description: e?.message ?? 'حدث خطأ غير متوقع أثناء جلب الإحداثيات' });
+      let errorMessage = e?.message ?? 'حدث خطأ غير متوقع أثناء جلب الإحداثيات';
+      if (errorMessage === 'Failed to fetch') {
+          errorMessage = 'تعذّر الوصول إلى واجهة الخادم /api (تحقّق من الراوت/الميدلوير/CSP)';
+      }
+      toast({ variant: "destructive", title: "فشل تحديد الموقع", description: errorMessage });
     } finally {
         setIsGeocoding(false);
     }
