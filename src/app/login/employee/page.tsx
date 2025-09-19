@@ -7,8 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { loginWithEmail } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -25,11 +24,11 @@ export default function EmployeeLoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await loginWithEmail(email, password);
       toast({
         title: "تم تسجيل الدخول بنجاح.",
       });
-      router.push('/');
+      router.replace('/');
     } catch (error: any) {
       console.error(error);
       toast({

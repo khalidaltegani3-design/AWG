@@ -7,8 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { loginWithEmail } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SupervisorLoginPage() {
@@ -23,11 +22,11 @@ export default function SupervisorLoginPage() {
     setIsLoading(true);
     try {
       // TODO: Add logic to verify if the user is actually a supervisor/admin
-      await signInWithEmailAndPassword(auth, email, password);
+      await loginWithEmail(email, password);
       toast({
         title: "تم تسجيل الدخول بنجاح.",
       });
-      router.push('/supervisor');
+      router.replace('/supervisor');
     } catch (error) {
       console.error(error);
        toast({
@@ -81,5 +80,3 @@ export default function SupervisorLoginPage() {
     </main>
   );
 }
-
-    

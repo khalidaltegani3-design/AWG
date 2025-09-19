@@ -18,7 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 import dynamic from 'next/dynamic';
 import { allDepartments } from '@/lib/departments';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { geocodeAddress } from '@/ai/flows/geocode-flow';
 
 function AppHeader() {
   const router = useRouter();
@@ -77,24 +76,28 @@ export default function CreateReportPage() {
   };
   
   const handleFindQAddress = async () => {
-    console.log('--- Starting Geocoding ---');
-    console.log(`Inputs: Zone=${zone}, Street=${street}, Building=${building}`);
-
     if (!zone || !street || !building) {
         toast({ variant: "destructive", title: "خطأ", description: "يرجى إدخال أرقام المنطقة والشارع والمبنى." });
-        console.error('Geocoding Error: Missing required address fields.');
         return;
     }
     
     setIsGeocoding(true);
     try {
-      const result = await geocodeAddress({ zone, street, building });
-      console.log('[Geocoding Result] Received from flow:', result);
+      const response = await fetch('/api/qnas/get-location', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ zone, street, building }),
+      });
+
+      const result = await response.json();
       
-      if (result && result.lat && result.lng) {
-        setPosition([result.lat, result.lng]);
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "لم نتمكن من العثور على العنوان. يرجى التحقق من الأرقام.");
+      }
+      
+      if (result.data && result.data.lat && result.data.lng) {
+        setPosition([result.data.lat, result.data.lng]);
         toast({ title: "تم تحديد الموقع", description: `تم تحديد الموقع بنجاح للعنوان: ${zone}/${street}/${building}` });
-        console.log(`[Map Update] Setting position to [${result.lat}, ${result.lng}]`);
       } else {
         throw new Error("Invalid response from geocoding service.");
       }
@@ -103,11 +106,10 @@ export default function CreateReportPage() {
         toast({
             variant: "destructive",
             title: "فشل تحديد الموقع",
-            description: error.message || "لم نتمكن من العثور على العنوان. يرجى التحقق من الأرقام أو تحديده يدويًا.",
+            description: error.message,
         });
     } finally {
         setIsGeocoding(false);
-        console.log('--- End Geocoding ---');
     }
   };
   
@@ -174,13 +176,13 @@ export default function CreateReportPage() {
         attachments: attachmentUrls,
         status: "open",
         createdAt: serverTimestamp(),
-      });
+      }, { merge: true });
       
       toast({
         title: "تم إرسال البلاغ بنجاح.",
         description: "سيتم مراجعته من قبل القسم المختص.",
       });
-      router.push('/');
+      router.replace('/');
 
     } catch (error) {
       console.error("Error creating report:", error);

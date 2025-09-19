@@ -1,5 +1,5 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { getFunctions } from 'firebase/functions';
@@ -17,12 +17,21 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+const databaseId = process.env.NEXT_PUBLIC_FIREBASE_DB_ID || 'shamil';
+const db = getFirestore(app, { databaseId });
+
 const auth = getAuth(app);
-const db = getFirestore(app);
 const functions = getFunctions(app);
 const storage = getStorage(app);
 
 export { app, auth, db, functions, storage, getAuth };
+
+export async function loginWithEmail(email: string, password: string) {
+  await setPersistence(auth, browserLocalPersistence);
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  return cred.user;
+}
 
 // FCM Token Management
 export async function registerWebFcmToken(userId: string) {
