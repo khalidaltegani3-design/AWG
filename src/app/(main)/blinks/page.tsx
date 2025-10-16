@@ -117,13 +117,6 @@ export default function BlinksPage() {
             <BlinkItem key={blink.id} blink={blink} />
             ))}
         </div>
-        <Button 
-            size="lg"
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 rounded-full shadow-lg"
-        >
-            <Camera className="w-6 h-6" />
-            <span className="mr-2">إضافة Blink</span>
-        </Button>
     </div>
   );
 }
