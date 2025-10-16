@@ -1,131 +1,120 @@
-
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Camera, Edit, Plus } from 'lucide-react';
+import { Heart, MessageCircle, Send, MoreVertical, Music } from 'lucide-react';
 
 type Blink = {
   id: string;
-  name: string;
-  avatar: string;
-  timestamp: string;
-  seen: boolean;
+  user: {
+    name: string;
+    avatar: string;
+  };
+  videoUrl: string; // For now, we'll use an image placeholder
+  description: string;
+  song: string;
+  likes: number;
+  comments: number;
+  shares: number;
 };
 
 const blinks: Blink[] = [
   {
     id: '1',
-    name: 'أحمد خليل',
-    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-    timestamp: 'منذ 23 دقيقة',
-    seen: false,
+    user: {
+      name: '@nawaf_dev',
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
+    },
+    videoUrl: 'https://images.pexels.com/videos/3254013/free-video-3254013.jpg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    description: 'أجواء خيالية في نيوم! #نيوم #السعودية',
+    song: 'Original Sound - nawaf_dev',
+    likes: 1250,
+    comments: 23,
+    shares: 45,
   },
   {
     id: '2',
-    name: 'فاطمة عبدالله',
-    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d',
-    timestamp: 'منذ ساعة',
-    seen: false,
+    user: {
+      name: '@travel_lover',
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d',
+    },
+    videoUrl: 'https://images.pexels.com/videos/857100/free-video-857100.jpg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    description: 'استكشاف شوارع طوكيو ليلاً 🍜🏮',
+    song: 'Tokyo Drift - Teriyaki Boyz',
+    likes: 3400,
+    comments: 112,
+    shares: 250,
   },
     {
     id: '3',
-    name: 'محمد علي',
-    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d',
-    timestamp: 'منذ 5 ساعات',
-    seen: true,
-  },
-    {
-    id: '4',
-    name: 'سارة يوسف',
-    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026708d',
-    timestamp: 'أمس',
-    seen: true,
+    user: {
+      name: '@food_critic',
+      avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d',
+    },
+    videoUrl: 'https://images.pexels.com/videos/3773340/free-video-3773340.jpg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    description: 'أسهل طريقة لعمل القهوة المختصة في البيت ☕️',
+    song: 'Morning Coffee - Jazzy Tunes',
+    likes: 876,
+    comments: 55,
+    shares: 98,
   },
 ];
 
 
 const BlinkItem = ({ blink }: { blink: Blink }) => (
-    <div className="flex items-center gap-4 p-3 hover:bg-muted transition-colors rounded-lg cursor-pointer">
-        <div className="relative">
-             <Avatar className={`h-12 w-12 border-2 ${blink.seen ? 'border-muted' : 'border-secondary'}`}>
-                <AvatarImage src={blink.avatar} alt={blink.name} />
-                <AvatarFallback>{blink.name.substring(0, 2)}</AvatarFallback>
-            </Avatar>
+    <div className="relative h-full w-full snap-start flex-shrink-0">
+        {/* In a real app, this would be a <video> element */}
+        <img src={blink.videoUrl} alt={blink.description} className="h-full w-full object-cover" />
+
+        {/* Overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent">
+            <div className="flex items-end">
+                {/* Left side: Video Info */}
+                <div className="flex-grow space-y-2 text-white">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-10 w-10 border-2">
+                            <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
+                            <AvatarFallback>{blink.user.name.substring(1, 3)}</AvatarFallback>
+                        </Avatar>
+                        <p className="font-semibold">{blink.user.name}</p>
+                    </div>
+                    <p className="text-sm">{blink.description}</p>
+                    <div className="flex items-center gap-2 text-xs">
+                        <Music className="h-4 w-4" />
+                        <p>{blink.song}</p>
+                    </div>
+                </div>
+
+                {/* Right side: Action Buttons */}
+                <div className="flex flex-col items-center gap-4 text-white">
+                    <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white">
+                        <Heart className="h-8 w-8" />
+                        <span className="text-xs font-bold">{blink.likes > 1000 ? `${(blink.likes/1000).toFixed(1)}k` : blink.likes}</span>
+                    </Button>
+                     <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white">
+                        <MessageCircle className="h-8 w-8" />
+                        <span className="text-xs font-bold">{blink.comments}</span>
+                    </Button>
+                     <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white">
+                        <Send className="h-8 w-8" />
+                        <span className="text-xs font-bold">{blink.shares}</span>
+                    </Button>
+                     <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
+                        <MoreVertical className="h-8 w-8" />
+                    </Button>
+                </div>
+            </div>
         </div>
-      <div className="flex-grow">
-        <p className="font-semibold">{blink.name}</p>
-        <p className="text-sm text-muted-foreground">{blink.timestamp}</p>
-      </div>
     </div>
 );
 
 
-const MyBlink = () => (
-     <div className="flex items-center gap-4 p-3 hover:bg-muted transition-colors rounded-lg cursor-pointer">
-        <div className="relative">
-             <Avatar className="h-12 w-12">
-                <AvatarImage src="https://i.pravatar.cc/150?u=me" alt="My Blink" />
-                <AvatarFallback>ME</AvatarFallback>
-            </Avatar>
-             <div className="absolute bottom-0 right-0 flex items-center justify-center w-5 h-5 bg-primary rounded-full border-2 border-background">
-                <Plus className="h-4 w-4 text-primary-foreground" />
-             </div>
-        </div>
-      <div className="flex-grow">
-        <p className="font-semibold">حالتي</p>
-        <p className="text-sm text-muted-foreground">إضافة إلى حالتي</p>
-      </div>
-    </div>
-)
-
-
 export default function BlinksPage() {
-  const recentBlinks = blinks.filter(b => !b.seen);
-  const viewedBlinks = blinks.filter(b => b.seen);
-
   return (
-    <div className="flex flex-col h-full relative">
-      <header className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
-        <h1 className="text-2xl font-bold">Blinks</h1>
-      </header>
-
-       <div className="flex-grow">
-            <div className="p-2">
-                <MyBlink />
-            </div>
-
-            {recentBlinks.length > 0 && (
-                <div>
-                    <h2 className="px-5 py-2 text-sm font-semibold text-muted-foreground">التحديثات الأخيرة</h2>
-                    <div className="px-2">
-                    {recentBlinks.map((blink) => (
-                        <BlinkItem key={blink.id} blink={blink} />
-                    ))}
-                    </div>
-                </div>
-            )}
-
-            {viewedBlinks.length > 0 && (
-                 <div>
-                    <h2 className="px-5 py-2 text-sm font-semibold text-muted-foreground">التحديثات التي تمت مشاهدتها</h2>
-                    <div className="px-2">
-                    {viewedBlinks.map((blink) => (
-                        <BlinkItem key={blink.id} blink={blink} />
-                    ))}
-                    </div>
-                </div>
-            )}
-       </div>
-
-        <div className="absolute bottom-20 right-4 flex flex-col gap-3">
-             <Button variant="secondary" size="icon" className="h-12 w-12 rounded-2xl shadow-lg">
-                <Edit className="h-6 w-6" />
-            </Button>
-            <Button size="icon" className="h-14 w-14 rounded-2xl shadow-lg">
-                <Camera className="h-7 w-7" />
-            </Button>
-        </div>
+    <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+        {blinks.map((blink) => (
+          <BlinkItem key={blink.id} blink={blink} />
+        ))}
     </div>
   );
 }
