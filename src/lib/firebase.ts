@@ -1,9 +1,8 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getMessaging } from 'firebase/messaging';
 import { getFunctions } from 'firebase/functions';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -18,63 +17,11 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-const databaseId = process.env.NEXT_PUBLIC_FIREBASE_DB_ID || 'shamil';
-const db = getFirestore(app, { databaseId });
+const db = getFirestore(app);
 
 const auth = getAuth(app);
 const functions = getFunctions(app);
 const storage = getStorage(app);
 
+
 export { app, auth, db, functions, storage, getAuth };
-
-export async function loginWithEmail(email: string, password: string) {
-  await setPersistence(auth, browserLocalPersistence);
-  const cred = await signInWithEmailAndPassword(auth, email, password);
-  return cred.user;
-}
-
-// FCM Token Management
-export async function registerWebFcmToken(userId: string) {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-    return;
-  }
-  
-  try {
-    const messaging = getMessaging(app);
-    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-
-    if (!vapidKey) {
-        console.warn("VAPID key for FCM is not set. Skipping token registration.");
-        return;
-    }
-    
-    // Request permission to receive notifications
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const token = await getToken(messaging, { vapidKey: vapidKey });
-      if (token) {
-        console.log('FCM Token:', token);
-        await setDoc(doc(db, "devices", token), {
-          userId, 
-          platform: "web", 
-          createdAt: serverTimestamp(), 
-          enabled: true
-        }, { merge: true });
-      } else {
-        console.log('No registration token available. Request permission to generate one.');
-      }
-    } else {
-      console.log('Unable to get permission to notify.');
-    }
-
-    // Handle incoming messages while the app is in the foreground
-    onMessage(messaging, (payload) => {
-        console.log('Message received. ', payload);
-        // You can display a toast or a custom notification here
-        // For example, using the app's `useToast` hook logic
-    });
-
-  } catch (error) {
-    console.error('An error occurred while retrieving token. ', error);
-  }
-}
