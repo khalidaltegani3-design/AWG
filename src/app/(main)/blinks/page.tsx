@@ -102,6 +102,9 @@ const BlinkItem = ({ blink }: { blink: Blink }) => (
                      <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
                         <MoreVertical className="h-8 w-8" />
                     </Button>
+                    <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
+                        <Camera className="h-8 w-8" />
+                    </Button>
                 </div>
             </div>
         </div>
