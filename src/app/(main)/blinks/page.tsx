@@ -2,7 +2,8 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Send, MoreVertical, Music, Camera } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video } from 'lucide-react';
 
 type Blink = {
   id: string;
@@ -61,6 +62,32 @@ const blinks: Blink[] = [
 ];
 
 
+const CreateBlinkDialog = () => (
+    <Dialog>
+        <DialogTrigger asChild>
+             <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
+                <Camera className="h-8 w-8" />
+            </Button>
+        </DialogTrigger>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>إنشاء Blink جديد</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 pt-4">
+                <Button variant="outline" className="flex flex-col h-28 gap-2">
+                    <Upload className="h-8 w-8" />
+                    <span>الرفع من المعرض</span>
+                </Button>
+                <Button variant="outline" className="flex flex-col h-28 gap-2">
+                    <Video className="h-8 w-8" />
+                    <span>تسجيل فيديو</span>
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
+)
+
+
 const BlinkItem = ({ blink }: { blink: Blink }) => (
     <div className="relative h-full w-full snap-start flex-shrink-0">
         {/* In a real app, this would be a <video> element */}
@@ -102,9 +129,7 @@ const BlinkItem = ({ blink }: { blink: Blink }) => (
                      <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
                         <MoreVertical className="h-8 w-8" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
-                        <Camera className="h-8 w-8" />
-                    </Button>
+                    <CreateBlinkDialog />
                 </div>
             </div>
         </div>
