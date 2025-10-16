@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video } from 'lucide-react';
+import Link from 'next/link';
 
 type Blink = {
   id: string;
@@ -78,10 +79,12 @@ const CreateBlinkDialog = () => (
                     <Upload className="h-8 w-8" />
                     <span>الرفع من المعرض</span>
                 </Button>
-                <Button variant="outline" className="flex flex-col h-28 gap-2">
-                    <Video className="h-8 w-8" />
-                    <span>تسجيل فيديو</span>
-                </Button>
+                <Link href="/blinks/create" className="w-full h-full">
+                    <Button variant="outline" className="flex flex-col h-28 gap-2 w-full">
+                        <Video className="h-8 w-8" />
+                        <span>تسجيل فيديو</span>
+                    </Button>
+                </Link>
             </div>
         </DialogContent>
     </Dialog>
