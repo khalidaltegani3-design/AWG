@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'Shamil App',
@@ -20,7 +19,11 @@ export default function RootLayout({
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
         />
       </head>
-      <body className="bg-background">{children}</body>
+      <body className="bg-muted">
+        <div className="relative mx-auto flex min-h-screen max-w-md flex-col bg-background shadow-2xl">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
