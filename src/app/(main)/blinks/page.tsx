@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Send, MoreVertical, Music } from 'lucide-react';
+import { Heart, MessageCircle, Send, MoreVertical, Music, Camera } from 'lucide-react';
 
 type Blink = {
   id: string;
@@ -111,10 +111,19 @@ const BlinkItem = ({ blink }: { blink: Blink }) => (
 
 export default function BlinksPage() {
   return (
-    <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
-        {blinks.map((blink) => (
-          <BlinkItem key={blink.id} blink={blink} />
-        ))}
+    <div className="relative h-full w-full">
+        <div className="absolute inset-0 h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+            {blinks.map((blink) => (
+            <BlinkItem key={blink.id} blink={blink} />
+            ))}
+        </div>
+        <Button 
+            size="lg"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 rounded-full shadow-lg"
+        >
+            <Camera className="w-6 h-6" />
+            <span className="mr-2">إضافة Blink</span>
+        </Button>
     </div>
   );
 }
