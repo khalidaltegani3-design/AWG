@@ -1,10 +1,11 @@
 
 'use client';
 
-import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image, MapPin, FileText } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -94,9 +95,30 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
       {/* Chat Input */}
       <footer className="flex items-center gap-2 p-3 border-t bg-background">
-        <Button variant="ghost" size="icon">
-          <Paperclip className="h-6 w-6 text-muted-foreground" />
-        </Button>
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Paperclip className="h-6 w-6 text-muted-foreground" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2 mb-2" side="top" align="center">
+                <div className="flex gap-2">
+                    <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                        <Image className="h-6 w-6" />
+                        <span className="text-xs">صورة</span>
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                        <MapPin className="h-6 w-6" />
+                        <span className="text-xs">موقع</span>
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                        <FileText className="h-6 w-6" />
+                        <span className="text-xs">ملف</span>
+                    </Button>
+                </div>
+            </PopoverContent>
+        </Popover>
+        
         <Input placeholder="اكتب رسالتك..." className="flex-grow rounded-full bg-muted" />
         <Button size="icon" className="rounded-full">
           <Send className="h-5 w-5" />
