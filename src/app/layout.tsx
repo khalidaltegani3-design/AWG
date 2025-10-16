@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: 'Shamil App',
@@ -22,6 +23,7 @@ export default function RootLayout({
       <body className="bg-muted">
         <div className="relative mx-auto flex min-h-screen max-w-md flex-col bg-background shadow-2xl">
           {children}
+          <Toaster />
         </div>
       </body>
     </html>

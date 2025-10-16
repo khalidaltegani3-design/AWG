@@ -3,8 +3,18 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ArrowDownLeft, ArrowUpRight, Link2, Phone, Video } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { ArrowDownLeft, ArrowUpRight, Copy, Link2, Phone, Share2, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 type Call = {
   id: string;
@@ -95,6 +105,64 @@ const CallItem = ({ call }: { call: Call }) => (
 );
 
 
+const CreateCallLinkDialog = () => {
+    const callLink = "https://shamil.app/join/a8s7d6f5";
+    const { toast } = useToast();
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(callLink);
+        toast({
+            title: "تم نسخ الرابط",
+            description: "يمكنك الآن مشاركة رابط المكالمة.",
+        });
+    }
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                <div className="flex items-center gap-4 p-3 hover:bg-muted transition-colors rounded-lg cursor-pointer">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary">
+                        <Link2 className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <div className="flex-grow">
+                        <p className="font-semibold text-primary">إنشاء رابط مكالمة</p>
+                        <p className="text-sm text-muted-foreground">مشاركة رابط للانضمام إلى مكالمة</p>
+                    </div>
+                </div>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <div className="flex justify-center">
+                      <div className="p-3 rounded-full bg-secondary/20">
+                        <Video className="w-8 h-8 text-secondary"/>
+                      </div>
+                    </div>
+                    <DialogTitle className="text-center">رابط مكالمة فيديو</DialogTitle>
+                    <DialogDescription className="text-center">
+                        يمكن لأي شخص لديه الرابط الانضمام إلى هذه المكالمة. شاركه فقط مع من تثق بهم.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="relative">
+                    <Input value={callLink} readOnly className="pr-12 text-muted-foreground" />
+                    <Button variant="ghost" size="icon" className="absolute top-1/2 right-2 -translate-y-1/2" onClick={copyToClipboard}>
+                        <Copy className="h-5 w-5" />
+                    </Button>
+                </div>
+                <div className="flex flex-col gap-2">
+                     <Button>
+                        <Share2 className="ml-2 h-4 w-4" />
+                        مشاركة الرابط
+                    </Button>
+                    <Button variant="outline">
+                        <Phone className="ml-2 h-4 w-4" />
+                        مكالمة جديدة
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export default function CallsPage() {
   return (
     <div className="flex flex-col h-full">
@@ -106,15 +174,7 @@ export default function CallsPage() {
       </header>
       
       <div className="p-2">
-         <div className="flex items-center gap-4 p-3 hover:bg-muted transition-colors rounded-lg cursor-pointer">
-            <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary">
-                <Link2 className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div className="flex-grow">
-                <p className="font-semibold text-primary">إنشاء رابط مكالمة</p>
-                <p className="text-sm text-muted-foreground">مشاركة رابط للانضمام إلى مكالمة</p>
-            </div>
-         </div>
+         <CreateCallLinkDialog />
       </div>
 
       <div className="flex-grow px-2">
