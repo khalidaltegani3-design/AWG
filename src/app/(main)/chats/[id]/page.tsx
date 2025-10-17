@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image as ImageIcon, MapPin, FileText, PlaySquare } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image as ImageIcon, MapPin, FileText, PlaySquare, Mic } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,9 +93,17 @@ const ChatMessage = ({ message }: { message: (typeof messages)[0] }) => {
 export default function ChatPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const viewportRef = useRef<HTMLDivElement>(null);
-  // Wallpaper state would be managed globally in a real app (e.g., Context, Redux, Zustand)
-  // For this example, we'll keep it simple and not persist it across pages.
   const [wallpaper, setWallpaper] = useState<string | null>(null);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    // This is a temporary solution to apply wallpaper for the demo.
+    // In a real app, this would come from a global state or server.
+    const storedWallpaper = sessionStorage.getItem('chat-wallpaper');
+    if (storedWallpaper) {
+      setWallpaper(storedWallpaper);
+    }
+  }, []);
 
   useEffect(() => {
     // Scroll to bottom on initial load
@@ -103,6 +111,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
     }
   }, []);
+
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      // Logic to send message
+      console.log('Sending:', message);
+      setMessage('');
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -178,9 +194,15 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             </PopoverContent>
         </Popover>
         
-        <Input placeholder="اكتب رسالتك..." className="flex-grow rounded-full bg-muted" />
-        <Button size="icon" className="rounded-full">
-          <Send className="h-5 w-5" />
+        <Input 
+            placeholder="اكتب رسالتك..." 
+            className="flex-grow rounded-full bg-muted"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+        />
+        <Button size="icon" className="rounded-full" onClick={handleSendMessage}>
+            {message.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
         </Button>
       </footer>
     </div>
