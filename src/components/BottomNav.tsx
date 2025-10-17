@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageCircle, Phone, PlaySquare, Settings, Pulse } from 'lucide-react';
+import { MessageCircle, Phone, PlaySquare, Settings, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/chats', icon: MessageCircle, label: 'المحادثات' },
   { href: '/calls', icon: Phone, label: 'المكالمات' },
-  { href: '/status', icon: Pulse, label: 'الحالة' },
+  { href: '/status', icon: Activity, label: 'الحالة' },
   { href: '/blinks', icon: PlaySquare, label: 'Blinks' },
   { href: '/settings', icon: Settings, label: 'الإعدادات' },
 ];
