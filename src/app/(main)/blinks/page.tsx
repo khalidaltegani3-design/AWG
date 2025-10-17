@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video, X, Flag, Ban, Bookmark, Link as LinkIcon } from 'lucide-react';
+import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video, X, Flag, Ban, Bookmark, Link as LinkIcon, Plus, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -57,6 +57,7 @@ type Blink = {
   comments: number;
   shares: number;
   isLiked?: boolean;
+  isFollowing?: boolean;
   commentData: Comment[];
 };
 
@@ -74,6 +75,7 @@ const initialBlinks: Blink[] = [
     comments: 23,
     shares: 45,
     isLiked: false,
+    isFollowing: false,
     commentData: [
         { id: 'c1', user: { name: '@ali_gamer', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026709d' }, text: 'لقطة مذهلة!', likes: 5, isLiked: false},
         { id: 'c2', user: { name: '@sara_travels', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026708d' }, text: 'أتمنى أزورها قريبًا', likes: 12, isLiked: true},
@@ -92,6 +94,7 @@ const initialBlinks: Blink[] = [
     comments: 112,
     shares: 250,
     isLiked: true,
+    isFollowing: true,
     commentData: []
   },
     {
@@ -107,6 +110,7 @@ const initialBlinks: Blink[] = [
     comments: 55,
     shares: 98,
     isLiked: false,
+    isFollowing: false,
     commentData: [
         { id: 'c3', user: { name: '@coffee_addict', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026710d' }, text: 'شكرًا على الطريقة!', likes: 25, isLiked: false},
     ]
@@ -114,7 +118,7 @@ const initialBlinks: Blink[] = [
 ];
 
 
-const BlinkItem = ({ blink, onLike, onCommentClick, onShareClick, onMoreOptionsClick }: { blink: Blink, onLike: (id: string) => void, onCommentClick: (blink: Blink) => void, onShareClick: (blink: Blink) => void, onMoreOptionsClick: (action: string) => void }) => (
+const BlinkItem = ({ blink, onLike, onFollow, onCommentClick, onShareClick, onMoreOptionsClick }: { blink: Blink, onLike: (id: string) => void, onFollow: (id: string) => void, onCommentClick: (blink: Blink) => void, onShareClick: (blink: Blink) => void, onMoreOptionsClick: (action: string) => void }) => (
     <div className="relative h-full w-full snap-start flex-shrink-0">
         {/* In a real app, this would be a <video> element */}
         <img src={blink.videoUrl} alt={blink.description} className="h-full w-full object-cover" />
@@ -124,15 +128,27 @@ const BlinkItem = ({ blink, onLike, onCommentClick, onShareClick, onMoreOptionsC
             <div className="flex items-end">
                 {/* Left side: Video Info */}
                 <div className="flex-grow space-y-2 text-white">
-                    <Link href="/profile" className="inline-block">
-                        <div className="flex items-center gap-2">
-                            <Avatar className="h-10 w-10 border-2">
-                                <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
-                                <AvatarFallback>{blink.user.name.substring(1, 3)}</AvatarFallback>
-                            </Avatar>
-                            <p className="font-semibold">{blink.user.name}</p>
+                    <div className="flex items-center gap-3">
+                         <div className="relative">
+                             <Link href="/profile">
+                                <Avatar className="h-12 w-12 border-2">
+                                    <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
+                                    <AvatarFallback>{blink.user.name.substring(1, 3)}</AvatarFallback>
+                                </Avatar>
+                            </Link>
+                            <button 
+                                onClick={() => onFollow(blink.id)}
+                                className={cn("absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all",
+                                    blink.isFollowing ? "bg-muted text-muted-foreground" : "bg-red-500 text-white"
+                                )}
+                            >
+                                {blink.isFollowing ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                            </button>
                         </div>
-                    </Link>
+                        <Link href="/profile">
+                           <p className="font-semibold">{blink.user.name}</p>
+                        </Link>
+                    </div>
                     <p className="text-sm">{blink.description}</p>
                     <div className="flex items-center gap-2 text-xs">
                         <Music className="h-4 w-4" />
@@ -218,6 +234,14 @@ export default function BlinksPage() {
     );
   };
   
+    const handleFollow = (id: string) => {
+    setBlinks(prevBlinks => 
+        prevBlinks.map(blink => 
+            blink.id === id ? { ...blink, isFollowing: !blink.isFollowing } : blink
+        )
+    );
+  };
+
   const handleLikeComment = (blinkId: string, commentId: string) => {
     setBlinks(prevBlinks =>
       prevBlinks.map(blink => {
@@ -340,7 +364,7 @@ export default function BlinksPage() {
     <div className="relative h-full w-full">
         <div className="absolute inset-0 h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
             {blinks.map((blink) => (
-                <BlinkItem key={blink.id} blink={blink} onLike={handleLike} onCommentClick={handleCommentClick} onShareClick={handleShareClick} onMoreOptionsClick={handleMoreOptionsClick} />
+                <BlinkItem key={blink.id} blink={blink} onLike={handleLike} onFollow={handleFollow} onCommentClick={handleCommentClick} onShareClick={handleShareClick} onMoreOptionsClick={handleMoreOptionsClick} />
             ))}
         </div>
         <Sheet open={!!selectedBlink && !isShareSheetOpen} onOpenChange={handleSheetOpenChange}>
