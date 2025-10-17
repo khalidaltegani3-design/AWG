@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,10 +12,38 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ArrowDownLeft, ArrowUpRight, Copy, Link2, Phone, Share2, Video } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Copy, Link2, Phone, Share2, Video, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Notifications } from '@/components/Notifications';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useState } from 'react';
+
+
+const friends = [
+  {
+    id: '1',
+    name: 'أحمد خليل',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
+  },
+  {
+    id: '2',
+    name: 'فاطمة عبدالله',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d',
+  },
+  {
+    id: '3',
+    name: 'محمد علي',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d',
+  },
+    {
+    id: '5',
+    name: 'سارة يوسف',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026708d',
+  },
+];
+
 
 type Call = {
   id: string;
@@ -164,14 +193,56 @@ const CreateCallLinkDialog = () => {
 }
 
 export default function CallsPage() {
+    const [isNewCallSheetOpen, setIsNewCallSheetOpen] = useState(false);
+    const { toast } = useToast();
+
+    const handleStartCall = (friendName: string, type: 'voice' | 'video') => {
+        toast({
+            title: `جاري الاتصال بـ ${friendName}`,
+            description: `بدء مكالمة ${type === 'video' ? 'فيديو' : 'صوتية'}...`
+        });
+        setIsNewCallSheetOpen(false);
+    }
+
   return (
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
         <h1 className="text-2xl font-bold">المكالمات</h1>
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="hover:bg-black/20">
-                <Phone className="h-6 w-6" />
-            </Button>
+            <Sheet open={isNewCallSheetOpen} onOpenChange={setIsNewCallSheetOpen}>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="hover:bg-black/20">
+                        <Phone className="h-6 w-6" />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="bg-background rounded-t-2xl h-auto max-h-[60vh]">
+                    <SheetHeader className="text-center mb-4">
+                        <SheetTitle>إجراء مكالمة جديدة</SheetTitle>
+                         <button onClick={() => setIsNewCallSheetOpen(false)} className="absolute top-4 right-4 text-muted-foreground">
+                            <X className="h-5 w-5" />
+                        </button>
+                    </SheetHeader>
+                    <ScrollArea className="h-[calc(60vh-100px)] pr-4">
+                         <div className="space-y-2">
+                            {friends.map(friend => (
+                                <div key={friend.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={friend.avatar} />
+                                        <AvatarFallback>{friend.name.substring(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <p className="flex-grow font-semibold">{friend.name}</p>
+                                    <Button variant="ghost" size="icon" onClick={() => handleStartCall(friend.name, 'video')}>
+                                        <Video className="h-5 w-5 text-primary" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleStartCall(friend.name, 'voice')}>
+                                        <Phone className="h-5 w-5 text-primary" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </SheetContent>
+            </Sheet>
             <Notifications />
         </div>
       </header>
@@ -189,3 +260,5 @@ export default function CallsPage() {
     </div>
   );
 }
+
+    
