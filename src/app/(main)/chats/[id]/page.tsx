@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image as ImageIcon, MapPin, FileText, PlaySquare, Mic, Trash2, Play, Pause } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image as ImageIcon, MapPin, FileText, PlaySquare, Mic, Trash2, Play, Pause, Square } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRef, useEffect, useState } from 'react';
 import NextImage from 'next/image';
 import Link from 'next/link';
-import { AudioRecorder } from 'react-audio-voice-recorder';
+import { useToast } from '@/hooks/use-toast';
 
 
 const initialMessages = [
@@ -107,7 +107,7 @@ const AudioMessage = ({ message }: { message: any }) => {
     }, [])
 
     const formatTime = (time: number) => {
-        if (isNaN(time)) return '0:00';
+        if (isNaN(time) || time === Infinity) return '0:00';
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -166,6 +166,90 @@ const ChatMessage = ({ message }: { message: any }) => {
   );
 };
 
+const Recorder = ({ onRecordingComplete }: { onRecordingComplete: (blob: Blob) => void }) => {
+    const [isRecording, setIsRecording] = useState(false);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
+    const [recordingTime, setRecordingTime] = useState(0);
+    const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        return () => {
+            if (timerIntervalRef.current) {
+                clearInterval(timerIntervalRef.current);
+            }
+        };
+    }, []);
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorderRef.current = new MediaRecorder(stream);
+            audioChunksRef.current = [];
+
+            mediaRecorderRef.current.ondataavailable = (event) => {
+                audioChunksRef.current.push(event.data);
+            };
+
+            mediaRecorderRef.current.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                onRecordingComplete(audioBlob);
+                stream.getTracks().forEach(track => track.stop()); // Stop the stream
+            };
+
+            mediaRecorderRef.current.start();
+            setIsRecording(true);
+            
+            timerIntervalRef.current = setInterval(() => {
+                setRecordingTime(prevTime => prevTime + 1);
+            }, 1000);
+
+        } catch (error) {
+            console.error("Error accessing microphone:", error);
+            toast({
+                variant: 'destructive',
+                title: "خطأ في الوصول للميكروفون",
+                description: "الرجاء السماح بالوصول إلى الميكروفون في إعدادات المتصفح."
+            });
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+             if (timerIntervalRef.current) {
+                clearInterval(timerIntervalRef.current);
+            }
+            setRecordingTime(0);
+        }
+    };
+    
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    return (
+        <div className="flex-grow flex items-center justify-between h-10 rounded-full bg-muted px-3 gap-2">
+            <Mic className="text-destructive animate-pulse h-5 w-5" />
+            <span className="text-sm font-mono text-muted-foreground">{formatTime(recordingTime)}</span>
+            {!isRecording && (
+                <Button variant="ghost" size="icon" onClick={startRecording}>
+                    <Play className="h-5 w-5 text-primary" />
+                </Button>
+            )}
+            {isRecording && (
+                 <Button variant="ghost" size="icon" onClick={stopRecording}>
+                    <Square className="h-5 w-5 text-destructive" />
+                </Button>
+            )}
+        </div>
+    );
+};
+
 
 export default function ChatPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -173,7 +257,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [wallpaper, setWallpaper] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(initialMessages);
-  const [isRecording, setIsRecording] = useState(false);
+  const [mode, setMode] = useState<'text' | 'recording'>('text');
+  const [audioPreview, setAudioPreview] = useState<Blob | null>(null);
   
   useEffect(() => {
     // Scroll to bottom on initial load and when new messages are added
@@ -183,7 +268,13 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }, [messages]);
 
   const addAudioMessage = (blob: Blob) => {
-    const url = URL.createObjectURL(blob);
+    setAudioPreview(blob);
+    setMode('text');
+  };
+
+  const sendAudioMessage = () => {
+    if (!audioPreview) return;
+    const url = URL.createObjectURL(audioPreview);
     const newMessage = {
         id: `audio-${Date.now()}`,
         sender: 'me',
@@ -192,7 +283,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         timestamp: new Intl.DateTimeFormat('ar', { hour: 'numeric', minute: 'numeric' }).format(new Date()),
     };
     setMessages(prev => [...prev, newMessage]);
-    setIsRecording(false);
+    setAudioPreview(null);
   }
 
   const handleSendMessage = () => {
@@ -210,17 +301,19 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   };
   
     useEffect(() => {
-        const storedWallpaper = sessionStorage.getItem('chat-wallpaper');
-        if (storedWallpaper) {
-            setWallpaper(storedWallpaper);
-        }
+        // This is where native storage would be used.
+        // For now, it's disabled.
+        // const storedWallpaper = sessionStorage.getItem('chat-wallpaper');
+        // if (storedWallpaper) {
+        //     setWallpaper(storedWallpaper);
+        // }
   }, []);
 
   const handleMicClick = () => {
     if (message.trim()) {
       handleSendMessage();
     } else {
-      setIsRecording(true);
+      setMode('recording');
     }
   }
 
@@ -274,22 +367,25 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
       {/* Chat Input */}
       <footer className="flex items-center gap-2 p-3 border-t bg-background">
-        {isRecording ? (
-            <div className="flex-grow flex items-center h-10 rounded-full bg-muted px-3 gap-2">
-                <AudioRecorder 
-                    onRecordingComplete={addAudioMessage}
-                    audioTrackConstraints={{
-                        noiseSuppression: true,
-                        echoCancellation: true,
-                    }} 
-                    showVisualizer={true}
-                    downloadOnSavePress={false}
-                    downloadFileExtension="webm"
-                />
-                <Button variant="ghost" size="icon" onClick={() => setIsRecording(false)}>
+        {mode === 'recording' ? (
+            <>
+                <Recorder onRecordingComplete={addAudioMessage} />
+                <Button variant="ghost" size="icon" onClick={() => setMode('text')}>
                     <Trash2 className="h-5 w-5 text-destructive" />
                 </Button>
-            </div>
+            </>
+        ) : audioPreview ? (
+            <>
+                <Button variant="ghost" size="icon" onClick={() => setAudioPreview(null)}>
+                    <Trash2 className="h-5 w-5 text-destructive" />
+                </Button>
+                 <div className="flex-grow">
+                     <AudioMessage message={{ audioUrl: URL.createObjectURL(audioPreview) }} />
+                 </div>
+                 <Button size="icon" className="rounded-full flex-shrink-0" onClick={sendAudioMessage}>
+                    <Send className="h-5 w-5" />
+                </Button>
+            </>
         ) : (
         <>
             <Popover>
