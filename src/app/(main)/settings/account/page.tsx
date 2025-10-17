@@ -64,7 +64,7 @@ export default function AccountSettingsPage() {
                 icon={FileText}
                 title="طلب معلومات الحساب"
                 description="احصل على تقرير بمعلومات حسابك"
-                href="#"
+                href="/settings/account/request-info"
             />
         </div>
     </div>
