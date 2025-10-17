@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,6 +11,7 @@ import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { Notifications } from '@/components/Notifications';
 
 // Mock data that would normally come from another file or API
 const mockChats = [
@@ -31,14 +31,6 @@ const mockChats = [
     avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026706d',
   },
 ];
-
-const mockNotifications = [
-    { type: 'like', user: { name: 'فاطمة', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d' }, time: 'منذ 5 دقائق', postThumbnail: 'https://videos.pexels.com/video-files/3254013/3254013-thumb.jpg' },
-    { type: 'comment', user: { name: 'محمد', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d' }, time: 'منذ 15 دقيقة', comment: 'فيديو رائع!', postThumbnail: 'https://videos.pexels.com/video-files/3254013/3254013-thumb.jpg' },
-    { type: 'follow', user: { name: 'سارة', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026708d' }, time: 'منذ ساعة' },
-    { type: 'like', user: { name: 'علي', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026709d' }, time: 'منذ 3 ساعات', postThumbnail: 'https://videos.pexels.com/video-files/857100/857100-thumb.jpg' },
-];
-
 
 type Comment = {
     id: string;
@@ -249,37 +241,6 @@ const BlinkItem = ({ blink, onLike, onFollow, onCommentClick, onShareClick, onMo
     );
 }
 
-const NotificationItem = ({ notification }: { notification: typeof mockNotifications[0] }) => {
-    let message = '';
-    if (notification.type === 'like') {
-        message = `أعجب ${notification.user.name} بالفيديو الخاص بك.`;
-    } else if (notification.type === 'comment') {
-        message = `${notification.user.name} علّق: "${notification.comment}"`;
-    } else if (notification.type === 'follow') {
-        message = `بدأ ${notification.user.name} بمتابعتك.`;
-    }
-
-    return (
-        <div className="flex items-center gap-3 p-3 hover:bg-muted">
-            <Avatar className="h-11 w-11">
-                <AvatarImage src={notification.user.avatar} />
-                <AvatarFallback>{notification.user.name.substring(0, 2)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-grow">
-                <p className="text-sm">{message}</p>
-                <p className="text-xs text-muted-foreground">{notification.time}</p>
-            </div>
-            {notification.postThumbnail && (
-                <img src={notification.postThumbnail} alt="Post thumbnail" className="h-12 w-12 object-cover rounded-md" />
-            )}
-            {notification.type === 'follow' && (
-                <Button size="sm">متابعة</Button>
-            )}
-        </div>
-    );
-};
-
-
 export default function BlinksPage() {
   const [blinks, setBlinks] = useState<Blink[]>(initialBlinks);
   const [selectedBlink, setSelectedBlink] = useState<Blink | null>(null);
@@ -433,25 +394,7 @@ export default function BlinksPage() {
       <header className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-t from-black/30 to-transparent">
         <h1 className="text-xl font-bold text-white">رمشات</h1>
         
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                    <Bell className="h-6 w-6" />
-                </Button>
-            </SheetTrigger>
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>الإشعارات</SheetTitle>
-                </SheetHeader>
-                <ScrollArea className="h-[calc(100%-4rem)] -mx-6">
-                    <div className="divide-y">
-                        {mockNotifications.map((notif, index) => (
-                            <NotificationItem key={index} notification={notif} />
-                        ))}
-                    </div>
-                </ScrollArea>
-            </SheetContent>
-        </Sheet>
+        <Notifications />
       </header>
 
         <div className="absolute inset-0 h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
@@ -549,5 +492,3 @@ export default function BlinksPage() {
     </div>
   );
 }
-
-    

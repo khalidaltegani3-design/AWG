@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,6 +14,7 @@ import {
 import { ArrowDownLeft, ArrowUpRight, Copy, Link2, Phone, Share2, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { Notifications } from '@/components/Notifications';
 
 type Call = {
   id: string;
@@ -106,7 +106,7 @@ const CallItem = ({ call }: { call: Call }) => (
 
 
 const CreateCallLinkDialog = () => {
-    const callLink = "https://shamil.app/join/a8s7d6f5";
+    const callLink = "https://Zoli.app/join/a8s7d6f5";
     const { toast } = useToast();
 
     const copyToClipboard = () => {
@@ -168,9 +168,12 @@ export default function CallsPage() {
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
         <h1 className="text-2xl font-bold">المكالمات</h1>
-        <Button variant="ghost" size="icon" className="hover:bg-black/20">
-            <Phone className="h-6 w-6" />
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="hover:bg-black/20">
+                <Phone className="h-6 w-6" />
+            </Button>
+            <Notifications />
+        </div>
       </header>
       
       <div className="p-2">

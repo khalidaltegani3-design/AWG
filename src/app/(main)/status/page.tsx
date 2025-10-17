@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { Notifications } from '@/components/Notifications';
 
 const CreateStatusPopover = ({ children }: { children: React.ReactNode }) => (
     <Popover>
@@ -100,8 +100,9 @@ const StatusItem = ({ status }: { status: Status }) => (
 export default function StatusPage() {
   return (
     <div className="flex flex-col h-full relative">
-      <header className="flex items-center p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
+      <header className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
         <h1 className="text-2xl font-bold">الحالة</h1>
+        <Notifications />
       </header>
       
       <div className="flex-grow overflow-y-auto">
