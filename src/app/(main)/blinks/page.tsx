@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+
 
 type Blink = {
   id: string;
@@ -18,9 +21,10 @@ type Blink = {
   likes: number;
   comments: number;
   shares: number;
+  isLiked?: boolean;
 };
 
-const blinks: Blink[] = [
+const initialBlinks: Blink[] = [
   {
     id: '1',
     user: {
@@ -33,6 +37,7 @@ const blinks: Blink[] = [
     likes: 1250,
     comments: 23,
     shares: 45,
+    isLiked: false,
   },
   {
     id: '2',
@@ -46,6 +51,7 @@ const blinks: Blink[] = [
     likes: 3400,
     comments: 112,
     shares: 250,
+    isLiked: true,
   },
     {
     id: '3',
@@ -59,6 +65,7 @@ const blinks: Blink[] = [
     likes: 876,
     comments: 55,
     shares: 98,
+    isLiked: false,
   },
 ];
 
@@ -91,7 +98,7 @@ const CreateBlinkDialog = () => (
 )
 
 
-const BlinkItem = ({ blink }: { blink: Blink }) => (
+const BlinkItem = ({ blink, onLike }: { blink: Blink, onLike: (id: string) => void }) => (
     <div className="relative h-full w-full snap-start flex-shrink-0">
         {/* In a real app, this would be a <video> element */}
         <img src={blink.videoUrl} alt={blink.description} className="h-full w-full object-cover" />
@@ -117,8 +124,13 @@ const BlinkItem = ({ blink }: { blink: Blink }) => (
 
                 {/* Right side: Action Buttons */}
                 <div className="flex flex-col items-center gap-4 text-white">
-                    <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white">
-                        <Heart className="h-8 w-8" />
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white"
+                        onClick={() => onLike(blink.id)}
+                    >
+                        <Heart className={cn("h-8 w-8", blink.isLiked && "fill-red-500 text-red-500")} />
                         <span className="text-xs font-bold">{blink.likes > 1000 ? `${(blink.likes/1000).toFixed(1)}k` : blink.likes}</span>
                     </Button>
                      <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white">
@@ -141,11 +153,26 @@ const BlinkItem = ({ blink }: { blink: Blink }) => (
 
 
 export default function BlinksPage() {
+  const [blinks, setBlinks] = useState<Blink[]>(initialBlinks);
+
+  const handleLike = (id: string) => {
+    setBlinks(prevBlinks => 
+        prevBlinks.map(blink => {
+            if (blink.id === id) {
+                const isLiked = !blink.isLiked;
+                const likes = isLiked ? blink.likes + 1 : blink.likes - 1;
+                return { ...blink, isLiked, likes };
+            }
+            return blink;
+        })
+    );
+  };
+
   return (
     <div className="relative h-full w-full">
         <div className="absolute inset-0 h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
             {blinks.map((blink) => (
-            <BlinkItem key={blink.id} blink={blink} />
+                <BlinkItem key={blink.id} blink={blink} onLike={handleLike} />
             ))}
         </div>
     </div>
