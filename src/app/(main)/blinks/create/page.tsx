@@ -3,7 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, UserSquare, Search, Play, Check, GalleryVertical, Wand2 } from 'lucide-react';
+import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, UserSquare, Search, Play, Check, GalleryVertical, Wand2, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
+import { generateBackground } from '@/ai/flows/generate-background-flow';
 
 const mockSounds = [
     { id: 1, title: "الصوت الأصلي", artist: "nawaf_dev", duration: "0:15", cover: "https://i.pravatar.cc/150?u=a042581f4e29026704d" },
@@ -108,6 +109,7 @@ const FilterControl = ({ onSelect, currentFilter }: { onSelect: (filterClass: st
 export default function CreateBlinkPage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState(true);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [speed, setSpeed] = useState(1);
@@ -117,11 +119,15 @@ export default function CreateBlinkPage() {
   const [selectedSound, setSelectedSound] = useState<typeof mockSounds[0] | null>(null);
   const [isSoundPopoverOpen, setIsSoundPopoverOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const { toast } = useToast();
 
     useEffect(() => {
     let stream: MediaStream;
     
+    if (generatedImage) return;
+
     const getCameraPermission = async () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
@@ -148,7 +154,7 @@ export default function CreateBlinkPage() {
             stream.getTracks().forEach(track => track.stop());
         }
     };
-  }, [facingMode, toast]);
+  }, [facingMode, toast, generatedImage]);
 
   const handleFlipCamera = () => {
       setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
@@ -163,11 +169,45 @@ export default function CreateBlinkPage() {
       });
   }
 
+  const handleGenerateBackground = async () => {
+    if (!videoRef.current || !aiPrompt.trim()) {
+        toast({ variant: 'destructive', title: 'خطأ', description: 'يرجى كتابة وصف للخلفية المطلوبة.' });
+        return;
+    }
+
+    setIsGenerating(true);
+    setGeneratedImage(null);
+
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (context) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageDataUri = canvas.toDataURL('image/jpeg');
+        
+        try {
+            const result = await generateBackground({ prompt: aiPrompt, imageDataUri });
+            setGeneratedImage(result.imageDataUri);
+        } catch (error) {
+            console.error("AI background generation failed:", error);
+            toast({ variant: 'destructive', title: 'فشل توليد الخلفية', description: 'حدث خطأ أثناء محاولة إنشاء الخلفية. يرجى المحاولة مرة أخرى.' });
+        }
+    }
+
+    setIsGenerating(false);
+  }
+
   return (
     <div className="relative h-full w-full bg-black text-white flex flex-col">
       <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
-            <video ref={videoRef} className={cn("w-full h-full object-cover", activeFilter)} autoPlay muted playsInline />
-            {!hasCameraPermission && (
+            {generatedImage ? (
+                <Image src={generatedImage} alt="Generated background" layout="fill" objectFit="cover" className={cn(activeFilter)} />
+            ) : (
+                <video ref={videoRef} className={cn("w-full h-full object-cover", activeFilter)} autoPlay muted playsInline />
+            )}
+            {!hasCameraPermission && !generatedImage && (
                  <div className="absolute z-20 p-4">
                     <Alert variant="destructive">
                       <AlertTitle>الكاميرا غير متاحة</AlertTitle>
@@ -226,7 +266,7 @@ export default function CreateBlinkPage() {
         <SpeedControl onSelect={setSpeed} currentSpeed={speed} />
         <TimerControl onSelect={setTimer} currentTimer={timer} />
         <FilterControl onSelect={setActiveFilter} currentFilter={activeFilter} />
-        <CameraToolButton icon={UserSquare} label="خلفية AI" onClick={() => setIsAiBackgroundActive(prev => !prev)} active={isAiBackgroundActive} />
+        <CameraToolButton icon={UserSquare} label="خلفية AI" onClick={() => { setIsAiBackgroundActive(prev => !prev); setGeneratedImage(null); }} active={isAiBackgroundActive} />
       </aside>
 
       <footer className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center p-6">
@@ -237,9 +277,10 @@ export default function CreateBlinkPage() {
                     className="flex-grow rounded-full bg-black/50 border-white/30 text-white placeholder:text-neutral-300 focus:ring-offset-black focus:ring-white"
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
+                    disabled={isGenerating}
                 />
-                <Button size="icon" className="rounded-full bg-secondary h-12 w-12 flex-shrink-0">
-                    <Wand2 className="h-6 w-6" />
+                <Button size="icon" className="rounded-full bg-secondary h-12 w-12 flex-shrink-0" onClick={handleGenerateBackground} disabled={isGenerating}>
+                    {isGenerating ? <Loader2 className="h-6 w-6 animate-spin" /> : <Wand2 className="h-6 w-6" />}
                 </Button>
             </div>
         ) : (
