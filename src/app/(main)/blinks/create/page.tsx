@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, UserSquare, Search, Play, Check, GalleryVertical } from 'lucide-react';
+import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, UserSquare, Search, Play, Check, GalleryVertical, Wand2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -115,6 +115,7 @@ export default function CreateBlinkPage() {
   const [isAiBackgroundActive, setIsAiBackgroundActive] = useState(false);
   const [selectedSound, setSelectedSound] = useState<typeof mockSounds[0] | null>(null);
   const [isSoundPopoverOpen, setIsSoundPopoverOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
   const { toast } = useToast();
 
     useEffect(() => {
@@ -228,20 +229,32 @@ export default function CreateBlinkPage() {
       </aside>
 
       <footer className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center p-6">
-        <div className="flex items-center gap-16 w-full justify-center">
-             <div className="h-16 w-16" />
-
-            <div className="relative flex items-center justify-center h-24 w-24">
-                <button className="absolute h-20 w-20 bg-red-600 rounded-full border-4 border-white shadow-lg transition-transform active:scale-95" />
+        {isAiBackgroundActive ? (
+            <div className="flex w-full items-center gap-2">
+                <Input 
+                    placeholder="وصف الخلفية المطلوبة (مثال: شاطئ استوائي)..." 
+                    className="flex-grow rounded-full bg-black/50 border-white/30 text-white placeholder:text-neutral-300 focus:ring-offset-black focus:ring-white"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                />
+                <Button size="icon" className="rounded-full bg-secondary h-12 w-12 flex-shrink-0">
+                    <Wand2 className="h-6 w-6" />
+                </Button>
             </div>
+        ) : (
+            <div className="flex items-center gap-16 w-full justify-center">
+                 <Button variant="outline" className="h-16 w-16 bg-black/30 border-white/50 hover:bg-black/50 p-0">
+                    <GalleryVertical className="h-8 w-8" />
+                </Button>
 
-            <Button variant="outline" className="h-16 w-16 bg-black/30 border-white/50 hover:bg-black/50 p-0">
-                <GalleryVertical className="h-8 w-8" />
-            </Button>
-        </div>
+                <div className="relative flex items-center justify-center h-24 w-24">
+                    <button className="absolute h-20 w-20 bg-red-600 rounded-full border-4 border-white shadow-lg transition-transform active:scale-95" />
+                </div>
+
+                <div className="h-16 w-16" />
+            </div>
+        )}
       </footer>
     </div>
   );
 }
-
-    
