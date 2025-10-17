@@ -3,7 +3,14 @@ import type {NextConfig} from 'next';
 require('dotenv').config();
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  webpack: (config, { isServer }) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      "react-audio-voice-recorder": false,
+    };
+
+    return config;
+  },
   experimental: {
     // Other experimental features can go here in the future
   },
