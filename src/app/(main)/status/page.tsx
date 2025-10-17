@@ -22,15 +22,15 @@ const CreateStatusPopover = ({ children }: { children: React.ReactNode }) => (
             <div className="flex flex-col gap-4">
                  <Link href="/status/create" className="flex items-center gap-3">
                     <div className="p-3 bg-card rounded-lg shadow-md">
-                        <span className="text-sm font-medium">نص</span>
+                        <span className="text-sm font-medium">الكاميرا</span>
                     </div>
                     <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center shadow-lg">
-                        <Pencil className="h-6 w-6" />
+                        <Camera className="h-6 w-6" />
                     </div>
                 </Link>
                 <Link href="/status/create" className="flex items-center gap-3">
                      <div className="p-3 bg-card rounded-lg shadow-md">
-                        <span className="text-sm font-medium">صورة</span>
+                        <span className="text-sm font-medium">من المعرض</span>
                     </div>
                     <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center shadow-lg">
                         <ImageIcon className="h-6 w-6" />
