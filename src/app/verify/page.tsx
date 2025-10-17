@@ -22,7 +22,8 @@ function VerifyPageContent() {
   useEffect(() => {
     // For development, automatically "verify" and redirect.
     console.log(`Auto-verifying for phone number: ${phoneNumber}`);
-    router.replace('/chats');
+    // Redirect to onboarding for new users
+    router.replace('/onboarding');
   }, [router, phoneNumber]);
 
 
@@ -30,7 +31,7 @@ function VerifyPageContent() {
     e.preventDefault();
     // This part is now handled by the useEffect for auto-redirection.
     console.log(`Verifying code ${verificationCode} for ${phoneNumber}`);
-    router.replace('/chats');
+    router.replace('/onboarding');
   };
 
   return (

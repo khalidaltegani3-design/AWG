@@ -32,7 +32,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
            <Image
-            src="/shamil-logo.png"
+            src="/zoli-logo.png"
             alt="Zoli Logo"
             width={100}
             height={100}
