@@ -316,15 +316,15 @@ export default function CreateBlinkPage() {
             </div>
         ) : (
             <div className="flex items-center gap-16 w-full justify-center">
-                <div className="h-16 w-16" />
+                <Button variant="outline" className="h-16 w-16 bg-black/30 border-white/50 hover:bg-black/50 p-0">
+                    <GalleryVertical className="h-8 w-8" />
+                </Button>
                 
                 <div className="relative flex items-center justify-center h-24 w-24">
                     <button className="absolute h-20 w-20 bg-red-600 rounded-full border-4 border-white shadow-lg transition-transform active:scale-95" />
                 </div>
 
-                <Button variant="outline" className="h-16 w-16 bg-black/30 border-white/50 hover:bg-black/50 p-0">
-                    <GalleryVertical className="h-8 w-8" />
-                </Button>
+                <div className="h-16 w-16" />
             </div>
         )}
       </footer>
