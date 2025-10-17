@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, GalleryVertical } from 'lucide-react';
+import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, GalleryVertical, UserSquare } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -69,6 +69,7 @@ export default function CreateBlinkPage() {
   const [speed, setSpeed] = useState(1);
   const [timer, setTimer] = useState(0);
   const [effectsActive, setEffectsActive] = useState(false);
+  const [isAiBackgroundActive, setIsAiBackgroundActive] = useState(false);
   const { toast } = useToast();
 
     useEffect(() => {
@@ -141,6 +142,7 @@ export default function CreateBlinkPage() {
         <SpeedControl onSelect={setSpeed} currentSpeed={speed} />
         <TimerControl onSelect={setTimer} currentTimer={timer} />
         <CameraToolButton icon={Sparkles} label="المؤثرات" onClick={() => setEffectsActive(prev => !prev)} active={effectsActive} />
+        <CameraToolButton icon={UserSquare} label="خلفية AI" onClick={() => setIsAiBackgroundActive(prev => !prev)} active={isAiBackgroundActive} />
       </aside>
 
       {/* Bottom Controls */}
