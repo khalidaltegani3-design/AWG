@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image as ImageIcon, MapPin, FileText, PlaySquare, Mic, Trash2, Play, Pause, Square } from 'lucide-react';
@@ -231,21 +232,21 @@ const Recorder = ({ onRecordingComplete }: { onRecordingComplete: (blob: Blob) =
         const seconds = Math.floor(time % 60);
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
+    
+    useEffect(() => {
+        // Automatically start recording when the component mounts
+        startRecording();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
 
     return (
         <div className="flex-grow flex items-center justify-between h-10 rounded-full bg-muted px-3 gap-2">
             <Mic className="text-destructive animate-pulse h-5 w-5" />
             <span className="text-sm font-mono text-muted-foreground">{formatTime(recordingTime)}</span>
-            {!isRecording && (
-                <Button variant="ghost" size="icon" onClick={startRecording}>
-                    <Play className="h-5 w-5 text-primary" />
-                </Button>
-            )}
-            {isRecording && (
-                 <Button variant="ghost" size="icon" onClick={stopRecording}>
-                    <Square className="h-5 w-5 text-destructive" />
-                </Button>
-            )}
+            <Button variant="ghost" size="icon" onClick={stopRecording}>
+                <Send className="h-5 w-5 text-primary" />
+            </Button>
         </div>
     );
 };
@@ -310,10 +311,10 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }, []);
 
   const handleMicClick = () => {
-    if (message.trim()) {
-      handleSendMessage();
-    } else {
+    if (mode === 'text' && !message.trim()) {
       setMode('recording');
+    } else {
+      handleSendMessage();
     }
   }
 
@@ -435,3 +436,5 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    
