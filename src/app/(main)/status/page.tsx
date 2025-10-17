@@ -4,23 +4,26 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Camera, Edit } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 const MyStatus = () => (
-    <div className="flex items-center gap-4 p-4 hover:bg-muted cursor-pointer">
-        <div className="relative">
-            <Avatar className="h-14 w-14">
-                <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="My Avatar" />
-                <AvatarFallback>ME</AvatarFallback>
-            </Avatar>
-            <div className="absolute bottom-0 right-0 bg-primary rounded-full p-1 border-2 border-background">
-                <Camera className="h-4 w-4 text-primary-foreground" />
+    <Link href="/status/create">
+        <div className="flex items-center gap-4 p-4 hover:bg-muted cursor-pointer">
+            <div className="relative">
+                <Avatar className="h-14 w-14">
+                    <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="My Avatar" />
+                    <AvatarFallback>ME</AvatarFallback>
+                </Avatar>
+                <div className="absolute bottom-0 right-0 bg-primary rounded-full p-1 border-2 border-background">
+                    <Camera className="h-4 w-4 text-primary-foreground" />
+                </div>
+            </div>
+            <div>
+                <p className="font-semibold text-lg">حالتي</p>
+                <p className="text-muted-foreground">اضغط لإضافة حالة جديدة</p>
             </div>
         </div>
-        <div>
-            <p className="font-semibold text-lg">حالتي</p>
-            <p className="text-muted-foreground">اضغط لإضافة حالة جديدة</p>
-        </div>
-    </div>
+    </Link>
 );
 
 type Status = {
@@ -79,9 +82,11 @@ export default function StatusPage() {
       </div>
 
        <div className="absolute bottom-20 right-4 flex flex-col gap-4 z-20">
-            <Button size="icon" className="rounded-full h-12 w-12 bg-secondary text-secondary-foreground shadow-lg hover:bg-secondary/90">
-                <Camera className="h-6 w-6" />
-            </Button>
+            <Link href="/status/create">
+                <Button size="icon" className="rounded-full h-12 w-12 bg-secondary text-secondary-foreground shadow-lg hover:bg-secondary/90">
+                    <Camera className="h-6 w-6" />
+                </Button>
+            </Link>
       </div>
     </div>
   );
