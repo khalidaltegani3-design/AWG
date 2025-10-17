@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,11 +19,17 @@ function VerifyPageContent() {
   const searchParams = useSearchParams();
   const phoneNumber = searchParams.get('phone');
 
+  useEffect(() => {
+    // For development, automatically "verify" and redirect.
+    console.log(`Auto-verifying for phone number: ${phoneNumber}`);
+    router.replace('/chats');
+  }, [router, phoneNumber]);
+
+
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would verify the code with your auth service.
+    // This part is now handled by the useEffect for auto-redirection.
     console.log(`Verifying code ${verificationCode} for ${phoneNumber}`);
-    // For now, we'll just navigate to the main chats page on success.
     router.replace('/chats');
   };
 
@@ -33,37 +39,18 @@ function VerifyPageContent() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">التحقق من رقمك</CardTitle>
           <CardDescription>
-            أدخل الرمز المكون من 6 أرقام الذي أرسلناه إلى رقم الهاتف
-            <span dir="ltr" className="font-semibold inline-block mx-1">
-              +974 {phoneNumber}
-            </span>
+            جاري التحقق التلقائي... سيتم توجيهك الآن.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleVerify} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="code">رمز التحقق</Label>
-              <Input
-                id="code"
-                type="text"
-                placeholder="------"
-                maxLength={6}
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                className="text-center tracking-[1.5rem]"
-                dir="ltr"
-                required
-              />
+            <div className="text-center text-muted-foreground">
+                <p>
+                    تم الدخول برقم الهاتف:
+                    <span dir="ltr" className="font-semibold inline-block mx-1">
+                      +974 {phoneNumber}
+                    </span>
+                </p>
             </div>
-            <Button type="submit" className="w-full">
-              تحقق
-            </Button>
-            <div className="text-center">
-              <Button variant="link" type="button">
-                لم تستلم الرمز؟ إعادة الإرسال
-              </Button>
-            </div>
-          </form>
         </CardContent>
       </Card>
     </div>
