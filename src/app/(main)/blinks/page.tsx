@@ -113,7 +113,7 @@ const initialBlinks: Blink[] = [
 ];
 
 
-const BlinkItem = ({ blink, onLike, onCommentClick }: { blink: Blink, onLike: (id: string) => void, onCommentClick: (blink: Blink) => void }) => (
+const BlinkItem = ({ blink, onLike, onCommentClick, onShareClick }: { blink: Blink, onLike: (id: string) => void, onCommentClick: (blink: Blink) => void, onShareClick: (blink: Blink) => void }) => (
     <div className="relative h-full w-full snap-start flex-shrink-0">
         {/* In a real app, this would be a <video> element */}
         <img src={blink.videoUrl} alt={blink.description} className="h-full w-full object-cover" />
@@ -152,7 +152,7 @@ const BlinkItem = ({ blink, onLike, onCommentClick }: { blink: Blink, onLike: (i
                         <MessageCircle className="h-8 w-8" />
                         <span className="text-xs font-bold">{blink.comments}</span>
                     </Button>
-                     <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white">
+                     <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white" onClick={() => onShareClick(blink)}>
                         <Send className="h-8 w-8" />
                         <span className="text-xs font-bold">{blink.shares}</span>
                     </Button>
@@ -197,7 +197,7 @@ export default function BlinksPage() {
     setBlinks(prevBlinks =>
       prevBlinks.map(blink => {
         if (blink.id === blinkId) {
-          return {
+          const newBlink = {
             ...blink,
             commentData: blink.commentData.map(comment => {
               if (comment.id === commentId) {
@@ -208,6 +208,11 @@ export default function BlinksPage() {
               return comment;
             }),
           };
+          // Also update the selectedBlink if it's the one being modified
+          if(selectedBlink && selectedBlink.id === blinkId) {
+            setSelectedBlink(newBlink);
+          }
+          return newBlink;
         }
         return blink;
       })
@@ -240,9 +245,39 @@ export default function BlinksPage() {
         inputRef.current.focus();
     }
   }, [replyingTo])
+  
+  const handlePostComment = () => {
+    if (!commentInputValue.trim() || !selectedBlink) return;
 
-  const handleShareClick = () => {
-    if (!selectedBlink) return;
+    const newComment: Comment = {
+        id: `c${Date.now()}`,
+        user: { name: '@nawaf_dev', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' },
+        text: commentInputValue,
+        likes: 0,
+        isLiked: false,
+    };
+
+    setBlinks(prevBlinks =>
+        prevBlinks.map(blink => {
+            if (blink.id === selectedBlink.id) {
+                const updatedBlink = {
+                    ...blink,
+                    comments: blink.comments + 1,
+                    commentData: [newComment, ...blink.commentData],
+                };
+                setSelectedBlink(updatedBlink); // Update the sheet view
+                return updatedBlink;
+            }
+            return blink;
+        })
+    );
+    setCommentInputValue('');
+    setReplyingTo(null);
+  };
+
+
+  const handleShareClick = (blink: Blink) => {
+    setSelectedBlink(blink);
     setShareSheetOpen(true);
   }
 
@@ -259,10 +294,10 @@ export default function BlinksPage() {
     <div className="relative h-full w-full">
         <div className="absolute inset-0 h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
             {blinks.map((blink) => (
-                <BlinkItem key={blink.id} blink={blink} onLike={handleLike} onCommentClick={handleCommentClick} />
+                <BlinkItem key={blink.id} blink={blink} onLike={handleLike} onCommentClick={handleCommentClick} onShareClick={handleShareClick} />
             ))}
         </div>
-        <Sheet open={!!selectedBlink} onOpenChange={handleSheetOpenChange}>
+        <Sheet open={!!selectedBlink && !isShareSheetOpen} onOpenChange={handleSheetOpenChange}>
             <SheetContent 
                 side="bottom" 
                 className="bg-black/80 backdrop-blur-sm text-white border-0 rounded-t-2xl h-[60%]"
@@ -288,7 +323,7 @@ export default function BlinksPage() {
                                     <p className="text-xs text-neutral-400">{comment.user.name}</p>
                                     <p className="text-sm">{comment.text}</p>
                                      <div className="flex items-center gap-4 mt-2">
-                                        <span className="text-xs text-neutral-400">منذ 5 ساعات</span>
+                                        <span className="text-xs text-neutral-400">منذ لحظات</span>
                                         <button className="text-xs font-semibold text-neutral-300" onClick={() => handleSetReplyingTo(comment.user.name)}>رد</button>
                                     </div>
                                 </div>
@@ -314,8 +349,9 @@ export default function BlinksPage() {
                             onChange={(e) => setCommentInputValue(e.target.value)}
                             placeholder={replyingTo ? `الرد على ${replyingTo}...` : "إضافة تعليق..."} 
                             className="flex-grow rounded-full bg-neutral-800 border-neutral-700 focus:ring-offset-black focus:ring-white" 
+                            onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment()}}
                         />
-                        <Button size="icon" variant="ghost" className="rounded-full text-white" onClick={handleShareClick}>
+                        <Button size="icon" variant="ghost" className="rounded-full text-white" onClick={handlePostComment}>
                             <Send className="h-5 w-5" />
                         </Button>
                     </div>
