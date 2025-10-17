@@ -7,25 +7,34 @@ import { Camera, Image as ImageIcon, Pencil } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 const CreateStatusPopover = ({ children }: { children: React.ReactNode }) => (
     <Popover>
         <PopoverTrigger asChild>
             {children}
         </PopoverTrigger>
-        <PopoverContent side="top" align="center" className="w-auto p-2 mb-2 bg-background/80 backdrop-blur-sm border-muted">
-            <div className="flex gap-4">
-                <Link href="/status/create">
-                    <Button variant="outline" className="flex flex-col h-20 w-20 gap-2">
-                        <ImageIcon className="h-8 w-8" />
-                        <span>المعرض</span>
-                    </Button>
+        <PopoverContent 
+            side="top" 
+            align="center" 
+            className="w-auto p-0 mb-3 bg-transparent border-0 shadow-none"
+        >
+            <div className="flex flex-col gap-4">
+                 <Link href="/status/create" className="flex items-center gap-3">
+                    <div className="p-3 bg-card rounded-lg shadow-md">
+                        <span className="text-sm font-medium">نص</span>
+                    </div>
+                    <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center shadow-lg">
+                        <Pencil className="h-6 w-6" />
+                    </div>
                 </Link>
-                <Link href="/status/create">
-                     <Button variant="outline" className="flex flex-col h-20 w-20 gap-2">
-                        <Camera className="h-8 w-8" />
-                        <span>الكاميرا</span>
-                    </Button>
+                <Link href="/status/create" className="flex items-center gap-3">
+                     <div className="p-3 bg-card rounded-lg shadow-md">
+                        <span className="text-sm font-medium">صورة</span>
+                    </div>
+                    <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center shadow-lg">
+                        <ImageIcon className="h-6 w-6" />
+                    </div>
                 </Link>
             </div>
         </PopoverContent>
