@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -6,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video, X } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -19,6 +20,7 @@ type Comment = {
     };
     text: string;
     likes: number;
+    isLiked?: boolean;
 }
 
 type Blink = {
@@ -52,8 +54,8 @@ const initialBlinks: Blink[] = [
     shares: 45,
     isLiked: false,
     commentData: [
-        { id: 'c1', user: { name: 'ali_gamer', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026709d' }, text: 'لقطة مذهلة!', likes: 5},
-        { id: 'c2', user: { name: 'sara_travels', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026708d' }, text: 'أتمنى أزورها قريبًا', likes: 12},
+        { id: 'c1', user: { name: '@ali_gamer', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026709d' }, text: 'لقطة مذهلة!', likes: 5, isLiked: false},
+        { id: 'c2', user: { name: '@sara_travels', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026708d' }, text: 'أتمنى أزورها قريبًا', likes: 12, isLiked: true},
     ]
   },
   {
@@ -85,13 +87,25 @@ const initialBlinks: Blink[] = [
     shares: 98,
     isLiked: false,
     commentData: [
-        { id: 'c3', user: { name: 'coffee_addict', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026710d' }, text: 'شكرًا على الطريقة!', likes: 25},
+        { id: 'c3', user: { name: '@coffee_addict', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026710d' }, text: 'شكرًا على الطريقة!', likes: 25, isLiked: false},
     ]
   },
 ];
 
 
-const CommentsSheet = ({ blink, open, onOpenChange }: { blink: Blink | null, open: boolean, onOpenChange: (open: boolean) => void }) => {
+const CommentsSheet = ({ 
+    blink, 
+    open, 
+    onOpenChange,
+    onLikeComment,
+    onSetReplyingTo
+}: { 
+    blink: Blink | null, 
+    open: boolean, 
+    onOpenChange: (open: boolean) => void,
+    onLikeComment: (blinkId: string, commentId: string) => void,
+    onSetReplyingTo: (username: string | null) => void,
+}) => {
     if (!blink) return null;
 
     return (
@@ -100,10 +114,12 @@ const CommentsSheet = ({ blink, open, onOpenChange }: { blink: Blink | null, ope
                 side="bottom" 
                 className="bg-black/80 backdrop-blur-sm text-white border-0 rounded-t-2xl h-[60%]"
                 overlayClassName="bg-transparent"
+                onInteractOutside={() => onSetReplyingTo(null)}
+                onEscapeKeyDown={() => onSetReplyingTo(null)}
             >
-                <SheetHeader className="text-center mb-4">
+                 <SheetHeader className="text-center mb-4">
                     <SheetTitle className="text-white mx-auto">{blink.comments} تعليقًا</SheetTitle>
-                    <button onClick={() => onOpenChange(false)} className="absolute top-4 right-4 text-white">
+                    <button onClick={() => { onOpenChange(false); onSetReplyingTo(null); }} className="absolute top-4 right-4 text-white">
                         <X className="h-5 w-5" />
                     </button>
                 </SheetHeader>
@@ -118,9 +134,15 @@ const CommentsSheet = ({ blink, open, onOpenChange }: { blink: Blink | null, ope
                                 <div className="flex-grow">
                                     <p className="text-xs text-neutral-400">{comment.user.name}</p>
                                     <p className="text-sm">{comment.text}</p>
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <span className="text-xs text-neutral-400">منذ 5 ساعات</span>
+                                        <button className="text-xs font-semibold text-neutral-300" onClick={() => onSetReplyingTo(comment.user.name)}>رد</button>
+                                    </div>
                                 </div>
                                 <div className="flex flex-col items-center gap-1">
-                                    <Heart className="h-4 w-4 text-neutral-400" />
+                                    <button onClick={() => onLikeComment(blink.id, comment.id)}>
+                                        <Heart className={cn("h-4 w-4 text-neutral-400", comment.isLiked && "fill-red-500 text-red-500")} />
+                                    </button>
                                     <span className="text-xs text-neutral-400">{comment.likes}</span>
                                 </div>
                             </div>
@@ -133,7 +155,10 @@ const CommentsSheet = ({ blink, open, onOpenChange }: { blink: Blink | null, ope
                            <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
                            <AvatarFallback>ME</AvatarFallback>
                         </Avatar>
-                        <Input placeholder="إضافة تعليق..." className="flex-grow rounded-full bg-neutral-800 border-neutral-700 focus:ring-offset-black focus:ring-white" />
+                        <Input 
+                            placeholder="إضافة تعليق..." 
+                            className="flex-grow rounded-full bg-neutral-800 border-neutral-700 focus:ring-offset-black focus:ring-white"
+                        />
                         <Button size="icon" variant="ghost" className="rounded-full text-white">
                             <Send className="h-5 w-5" />
                         </Button>
@@ -206,6 +231,9 @@ const BlinkItem = ({ blink, onLike, onCommentClick }: { blink: Blink, onLike: (i
 export default function BlinksPage() {
   const [blinks, setBlinks] = useState<Blink[]>(initialBlinks);
   const [selectedBlink, setSelectedBlink] = useState<Blink | null>(null);
+  const [commentInputValue, setCommentInputValue] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleLike = (id: string) => {
     setBlinks(prevBlinks => 
@@ -220,6 +248,27 @@ export default function BlinksPage() {
     );
   };
   
+  const handleLikeComment = (blinkId: string, commentId: string) => {
+    setBlinks(prevBlinks =>
+      prevBlinks.map(blink => {
+        if (blink.id === blinkId) {
+          return {
+            ...blink,
+            commentData: blink.commentData.map(comment => {
+              if (comment.id === commentId) {
+                const isLiked = !comment.isLiked;
+                const likes = isLiked ? comment.likes + 1 : comment.likes - 1;
+                return { ...comment, isLiked, likes };
+              }
+              return comment;
+            }),
+          };
+        }
+        return blink;
+      })
+    );
+  };
+  
   const handleCommentClick = (blink: Blink) => {
       setSelectedBlink(blink);
   }
@@ -227,6 +276,17 @@ export default function BlinksPage() {
   const handleSheetOpenChange = (open: boolean) => {
       if (!open) {
           setSelectedBlink(null);
+          setReplyingTo(null);
+      }
+  }
+
+  const handleSetReplyingTo = (username: string | null) => {
+      setReplyingTo(username);
+      if (username) {
+          setCommentInputValue(`@${username.split('@')[1]} `);
+          inputRef.current?.focus();
+      } else {
+          setCommentInputValue('');
       }
   }
 
@@ -237,7 +297,68 @@ export default function BlinksPage() {
                 <BlinkItem key={blink.id} blink={blink} onLike={handleLike} onCommentClick={handleCommentClick} />
             ))}
         </div>
-        <CommentsSheet blink={selectedBlink} open={!!selectedBlink} onOpenChange={handleSheetOpenChange} />
+        <Sheet open={!!selectedBlink} onOpenChange={handleSheetOpenChange}>
+            <SheetContent 
+                side="bottom" 
+                className="bg-black/80 backdrop-blur-sm text-white border-0 rounded-t-2xl h-[60%]"
+                overlayClassName="bg-transparent"
+                onInteractOutside={() => handleSetReplyingTo(null)}
+                onEscapeKeyDown={() => handleSetReplyingTo(null)}
+            >
+                 <SheetHeader className="text-center mb-4">
+                    <SheetTitle className="text-white mx-auto">{selectedBlink?.comments} تعليقًا</SheetTitle>
+                    <button onClick={() => { handleSheetOpenChange(false); handleSetReplyingTo(null); }} className="absolute top-4 right-4 text-white">
+                        <X className="h-5 w-5" />
+                    </button>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100%-120px)] pr-4">
+                    <div className="space-y-4">
+                        {selectedBlink?.commentData.map(comment => (
+                            <div key={comment.id} className="flex gap-3">
+                                <Avatar className="h-9 w-9">
+                                    <AvatarImage src={comment.user.avatar} />
+                                    <AvatarFallback>{comment.user.name.substring(0, 2)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-grow">
+                                    <p className="text-xs text-neutral-400">{comment.user.name}</p>
+                                    <p className="text-sm">{comment.text}</p>
+                                     <div className="flex items-center gap-4 mt-2">
+                                        <span className="text-xs text-neutral-400">منذ 5 ساعات</span>
+                                        <button className="text-xs font-semibold text-neutral-300" onClick={() => handleSetReplyingTo(comment.user.name)}>رد</button>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-center gap-1">
+                                    <button onClick={() => handleLikeComment(selectedBlink.id, comment.id)}>
+                                        <Heart className={cn("h-4 w-4 text-neutral-400", comment.isLiked && "fill-red-500 text-red-500")} />
+                                    </button>
+                                    <span className="text-xs text-neutral-400">{comment.likes}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/80">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-9 w-9">
+                           <AvatarImage src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
+                           <AvatarFallback>ME</AvatarFallback>
+                        </Avatar>
+                        <Input
+                            ref={inputRef}
+                            value={commentInputValue}
+                            onChange={(e) => setCommentInputValue(e.target.value)}
+                            placeholder={replyingTo ? `الرد على ${replyingTo}...` : "إضافة تعليق..."} 
+                            className="flex-grow rounded-full bg-neutral-800 border-neutral-700 focus:ring-offset-black focus:ring-white" 
+                        />
+                        <Button size="icon" variant="ghost" className="rounded-full text-white">
+                            <Send className="h-5 w-5" />
+                        </Button>
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
     </div>
   );
 }
+
+    
