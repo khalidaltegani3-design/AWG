@@ -64,7 +64,7 @@ export default function SettingsPage() {
         <SettingsItem icon={KeyRound} title="الحساب" description="خصوصية، أمان، تغيير الرقم" href="/settings/account" />
         <SettingsItem icon={Users} title="القناة" description="إدارة ملفك الشخصي ومحتواك" href="/settings/profile" />
         <SettingsItem icon={Lock} title="الخصوصية" description="حظر جهات الاتصال، الرسائل المؤقتة" href="/settings/privacy" />
-        <SettingsItem icon={MessageCircle} title="المحادثات" description="السمات، الخلفيات، سجل المحادثات" href="#" />
+        <SettingsItem icon={MessageCircle} title="المحادثات" description="السمات، الخلفيات، سجل المحادثات" href="/settings/chats" />
         <SettingsItem icon={Bell} title="الإشعارات" description="نغمات الرسائل والمجموعات والمكالمات" href="#" />
         <SettingsItem icon={HelpCircle} title="المساعدة" description="مركز المساعدة، اتصل بنا، سياسة الخصوصية" href="#" />
       </div>
