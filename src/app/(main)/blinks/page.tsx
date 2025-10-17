@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video, X } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video, X, Flag, Ban, Bookmark, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -113,7 +114,7 @@ const initialBlinks: Blink[] = [
 ];
 
 
-const BlinkItem = ({ blink, onLike, onCommentClick, onShareClick }: { blink: Blink, onLike: (id: string) => void, onCommentClick: (blink: Blink) => void, onShareClick: (blink: Blink) => void }) => (
+const BlinkItem = ({ blink, onLike, onCommentClick, onShareClick, onMoreOptionsClick }: { blink: Blink, onLike: (id: string) => void, onCommentClick: (blink: Blink) => void, onShareClick: (blink: Blink) => void, onMoreOptionsClick: (action: string) => void }) => (
     <div className="relative h-full w-full snap-start flex-shrink-0">
         {/* In a real app, this would be a <video> element */}
         <img src={blink.videoUrl} alt={blink.description} className="h-full w-full object-cover" />
@@ -156,9 +157,31 @@ const BlinkItem = ({ blink, onLike, onCommentClick, onShareClick }: { blink: Bli
                         <Send className="h-8 w-8" />
                         <span className="text-xs font-bold">{blink.shares}</span>
                     </Button>
-                     <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
-                        <MoreVertical className="h-8 w-8" />
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
+                                <MoreVertical className="h-8 w-8" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="bg-background border-muted text-foreground">
+                            <DropdownMenuItem onClick={() => onMoreOptionsClick('report')}>
+                                <Flag className="ml-2 h-4 w-4" />
+                                <span>إبلاغ</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onMoreOptionsClick('not-interested')}>
+                                <Ban className="ml-2 h-4 w-4" />
+                                <span>غير مهتم</span>
+                            </DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => onMoreOptionsClick('save')}>
+                                <Bookmark className="ml-2 h-4 w-4" />
+                                <span>حفظ الفيديو</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onMoreOptionsClick('copy-link')}>
+                                <LinkIcon className="ml-2 h-4 w-4" />
+                                <span>نسخ الرابط</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <Link href="/blinks/create">
                         <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
                            <Camera className="h-8 w-8" />
@@ -227,6 +250,7 @@ export default function BlinksPage() {
       if (!open) {
           setSelectedBlink(null);
           setReplyingTo(null);
+          if (isShareSheetOpen) setShareSheetOpen(false);
       }
   }
 
@@ -289,12 +313,32 @@ export default function BlinksPage() {
     setShareSheetOpen(false);
   }
 
+  const handleMoreOptionsClick = (action: string) => {
+    switch (action) {
+      case 'report':
+        toast({ title: "تم إرسال البلاغ", description: "شكرًا لك، سنقوم بمراجعة الفيديو." });
+        break;
+      case 'not-interested':
+        toast({ title: "تم التسجيل", description: "سنحاول عرض عدد أقل من هذه الفيديوهات." });
+        break;
+      case 'save':
+        toast({ title: "تم الحفظ", description: "تم حفظ الفيديو في مجموعتك." });
+        break;
+      case 'copy-link':
+        navigator.clipboard.writeText(window.location.href);
+        toast({ title: "تم نسخ الرابط" });
+        break;
+      default:
+        break;
+    }
+  };
+
 
   return (
     <div className="relative h-full w-full">
         <div className="absolute inset-0 h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
             {blinks.map((blink) => (
-                <BlinkItem key={blink.id} blink={blink} onLike={handleLike} onCommentClick={handleCommentClick} onShareClick={handleShareClick} />
+                <BlinkItem key={blink.id} blink={blink} onLike={handleLike} onCommentClick={handleCommentClick} onShareClick={handleShareClick} onMoreOptionsClick={handleMoreOptionsClick} />
             ))}
         </div>
         <Sheet open={!!selectedBlink && !isShareSheetOpen} onOpenChange={handleSheetOpenChange}>
@@ -351,7 +395,7 @@ export default function BlinksPage() {
                             className="flex-grow rounded-full bg-neutral-800 border-neutral-700 focus:ring-offset-black focus:ring-white" 
                             onKeyDown={(e) => { if (e.key === 'Enter') handlePostComment()}}
                         />
-                        <Button size="icon" variant="ghost" className="rounded-full text-white" onClick={handlePostComment}>
+                         <Button size="icon" variant="ghost" className="rounded-full text-white" onClick={handlePostComment}>
                             <Send className="h-5 w-5" />
                         </Button>
                     </div>
@@ -387,5 +431,3 @@ export default function BlinksPage() {
     </div>
   );
 }
-
-    
