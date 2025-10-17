@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRef, useEffect, useState } from 'react';
 import NextImage from 'next/image';
 import Link from 'next/link';
-import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
+import { AudioRecorder } from 'react-audio-voice-recorder';
 
 
 const initialMessages = [
@@ -173,7 +173,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [wallpaper, setWallpaper] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(initialMessages);
-  const recorderControls = useAudioRecorder();
+  const [isRecording, setIsRecording] = useState(false);
   
   useEffect(() => {
     // Scroll to bottom on initial load and when new messages are added
@@ -192,6 +192,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         timestamp: new Intl.DateTimeFormat('ar', { hour: 'numeric', minute: 'numeric' }).format(new Date()),
     };
     setMessages(prev => [...prev, newMessage]);
+    setIsRecording(false);
   }
 
   const handleSendMessage = () => {
@@ -214,6 +215,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             setWallpaper(storedWallpaper);
         }
   }, []);
+
+  const handleMicClick = () => {
+    if (message.trim()) {
+      handleSendMessage();
+    } else {
+      setIsRecording(true);
+    }
+  }
 
   return (
     <div className="flex flex-col h-screen">
@@ -265,48 +274,49 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
       {/* Chat Input */}
       <footer className="flex items-center gap-2 p-3 border-t bg-background">
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Paperclip className="h-6 w-6 text-muted-foreground" />
+        {isRecording ? (
+            <div className="flex-grow flex items-center h-10 rounded-full bg-muted px-3 gap-2">
+                <AudioRecorder 
+                    onRecordingComplete={addAudioMessage}
+                    audioTrackConstraints={{
+                        noiseSuppression: true,
+                        echoCancellation: true,
+                    }} 
+                    showVisualizer={true}
+                    downloadOnSavePress={false}
+                    downloadFileExtension="webm"
+                />
+                <Button variant="ghost" size="icon" onClick={() => setIsRecording(false)}>
+                    <Trash2 className="h-5 w-5 text-destructive" />
                 </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-2 mb-2" side="top" align="center">
-                <div className="flex gap-2">
-                    <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
-                        <ImageIcon className="h-6 w-6" />
-                        <span className="text-xs">صورة</span>
+            </div>
+        ) : (
+        <>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Paperclip className="h-6 w-6 text-muted-foreground" />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
-                        <MapPin className="h-6 w-6" />
-                        <span className="text-xs">موقع</span>
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
-                        <FileText className="h-6 w-6" />
-                        <span className="text-xs">ملف</span>
-                    </Button>
-                </div>
-            </PopoverContent>
-        </Popover>
-        
-        <div className="flex-grow flex items-center h-10 rounded-full bg-muted px-3">
-             <AudioRecorder 
-                onRecordingComplete={addAudioMessage}
-                audioTrackConstraints={{
-                    noiseSuppression: true,
-                    echoCancellation: true,
-                }} 
-                recorderControls={recorderControls}
-                showVisualizer={true}
-                classes={{
-                    AudioRecorder: 'flex-grow flex items-center justify-between',
-                    AudioRecorderStartSaveClass: 'bg-transparent text-primary hidden',
-                    AudioRecorderStopSaveClass: 'bg-transparent text-primary hidden',
-                    AudioRecorderDiscardClass: 'bg-transparent text-destructive hidden',
-                    AudioRecorderVisualizer: 'flex-grow h-full',
-                }}
-            />
-            {!recorderControls.isRecording && (
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-2 mb-2" side="top" align="center">
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                            <ImageIcon className="h-6 w-6" />
+                            <span className="text-xs">صورة</span>
+                        </Button>
+                        <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                            <MapPin className="h-6 w-6" />
+                            <span className="text-xs">موقع</span>
+                        </Button>
+                        <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                            <FileText className="h-6 w-6" />
+                            <span className="text-xs">ملف</span>
+                        </Button>
+                    </div>
+                </PopoverContent>
+            </Popover>
+            
+            <div className="flex-grow flex items-center h-10 rounded-full bg-muted px-3">
                 <Input 
                     placeholder="اكتب رسالتك..." 
                     className="flex-grow rounded-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-full p-0"
@@ -314,25 +324,18 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                 />
-            )}
-             {recorderControls.isRecording && (
-                <div className="flex-grow flex items-center gap-2">
-                     <div className="w-2 h-2 bg-destructive rounded-full animate-pulse"></div>
-                    <span className="text-sm font-mono text-muted-foreground">{recorderControls.recordingTime} ث</span>
-                </div>
-            )}
-        </div>
+            </div>
 
-        <Button 
-            size="icon" 
-            className="rounded-full flex-shrink-0" 
-            onClick={message.trim() ? handleSendMessage : (recorderControls.isRecording ? recorderControls.stopRecording : recorderControls.startRecording)}
-        >
-            {message.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-        </Button>
+            <Button 
+                size="icon" 
+                className="rounded-full flex-shrink-0" 
+                onClick={handleMicClick}
+            >
+                {message.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </Button>
+        </>
+        )}
       </footer>
     </div>
   );
 }
-
-    

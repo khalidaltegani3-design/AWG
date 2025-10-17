@@ -4,6 +4,12 @@ require('dotenv').config();
 
 const nextConfig: NextConfig = {
   webpack: (config, { isServer }) => {
+    // This is the fix for the react-audio-voice-recorder issue.
+    // It prevents the module from being bundled on the server, where it fails.
+    if (isServer) {
+        config.externals.push('react-audio-voice-recorder');
+    }
+
     config.resolve.fallback = {
       ...config.resolve.fallback,
       "react-audio-voice-recorder": false,
