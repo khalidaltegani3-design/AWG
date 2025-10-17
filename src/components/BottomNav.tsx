@@ -97,7 +97,7 @@ export function BottomNav() {
                     : 'text-muted-foreground hover:text-primary'
                 )}
               >
-                <Icon className="w-6 h-6" isActive={isActive} />
+                <Icon className="w-6 h-6" {...(item.href === '/chats' || item.href === '/calls' || item.href === '/settings' ? { isActive } : {})} />
                 <span className="text-xs font-medium">{item.label}</span>
               </div>
             </Link>
