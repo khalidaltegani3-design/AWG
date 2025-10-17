@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image as ImageIcon, MapPin, FileText, PlaySquare, Mic, Trash2, Play, Pause, Square } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image as ImageIcon, MapPin, FileText, PlaySquare, Mic, Trash2, Play, Pause } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,6 @@ import { useRef, useEffect, useState } from 'react';
 import NextImage from 'next/image';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-
 
 const initialMessages = [
   { id: '1', sender: 'other', type: 'text', text: 'أهلاً بك، كيف يمكنني مساعدتك اليوم؟', timestamp: '10:50 ص' },
@@ -64,7 +63,7 @@ const SharedBlinkMessage = ({ message }: { message: any }) => (
     </div>
 );
 
-const AudioMessage = ({ message, isMe }: { message: any, isMe: boolean }) => {
+const AudioMessage = ({ audioUrl, isMe }: { audioUrl: string, isMe: boolean }) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -77,7 +76,6 @@ const AudioMessage = ({ message, isMe }: { message: any, isMe: boolean }) => {
             } else {
                 audioRef.current.play();
             }
-            setIsPlaying(!isPlaying);
         }
     };
     
@@ -95,6 +93,8 @@ const AudioMessage = ({ message, isMe }: { message: any, isMe: boolean }) => {
               setDuration(audio.duration);
             }
         };
+        const handlePlay = () => setIsPlaying(true);
+        const handlePause = () => setIsPlaying(false);
         const handleEnded = () => {
             setIsPlaying(false);
             setProgress(0);
@@ -103,19 +103,22 @@ const AudioMessage = ({ message, isMe }: { message: any, isMe: boolean }) => {
         audio.addEventListener('timeupdate', handleTimeUpdate);
         audio.addEventListener('durationchange', handleDurationChange);
         audio.addEventListener('ended', handleEnded);
+        audio.addEventListener('play', handlePlay);
+        audio.addEventListener('pause', handlePause);
         
         // Sometimes durationchange doesn't fire, especially for blob URLs.
         if (audio.readyState > 0 && audio.duration !== Infinity) {
            setDuration(audio.duration);
         }
 
-
         return () => {
             audio.removeEventListener('timeupdate', handleTimeUpdate);
             audio.removeEventListener('durationchange', handleDurationChange);
             audio.removeEventListener('ended', handleEnded);
+            audio.removeEventListener('play', handlePlay);
+            audio.removeEventListener('pause', handlePause);
         }
-    }, [audioRef.current?.src]) // Re-run when src changes
+    }, [audioRef.current?.src]); // Re-run when src changes
 
     const formatTime = (time: number) => {
         if (isNaN(time) || time === Infinity) return '0:00';
@@ -126,7 +129,7 @@ const AudioMessage = ({ message, isMe }: { message: any, isMe: boolean }) => {
 
     return (
         <div className="flex items-center gap-3 w-60">
-            <audio ref={audioRef} src={message.audioUrl} preload="metadata" />
+            <audio ref={audioRef} src={audioUrl} preload="metadata" />
             <Button onClick={togglePlay} size="icon" variant="ghost" className={cn("rounded-full flex-shrink-0 h-10 w-10", isMe ? 'text-primary-foreground hover:bg-white/20' : 'text-foreground')}>
                 {isPlaying ? <Pause className="w-5 h-5"/> : <Play className="w-5 h-5" />}
             </Button>
@@ -140,7 +143,6 @@ const AudioMessage = ({ message, isMe }: { message: any, isMe: boolean }) => {
     )
 }
 
-
 const ChatMessage = ({ message }: { message: any }) => {
   const isMe = message.sender === 'me';
 
@@ -151,7 +153,7 @@ const ChatMessage = ({ message }: { message: any }) => {
           case 'sharedBlink':
               return <SharedBlinkMessage message={message} />;
           case 'audio':
-              return <AudioMessage message={message} isMe={isMe} />
+              return <AudioMessage audioUrl={message.audioUrl} isMe={isMe} />
           default:
               return null;
       }
@@ -179,136 +181,27 @@ const ChatMessage = ({ message }: { message: any }) => {
   );
 };
 
-const Recorder = ({ onRecordingComplete, onCancel }: { onRecordingComplete: (blob: Blob) => void, onCancel: () => void }) => {
-    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-    const audioChunksRef = useRef<Blob[]>([]);
-    const [recordingTime, setRecordingTime] = useState(0);
-    const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-    const { toast } = useToast();
-
-    useEffect(() => {
-        const startRecording = async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorderRef.current = new MediaRecorder(stream);
-                audioChunksRef.current = [];
-
-                mediaRecorderRef.current.ondataavailable = (event) => {
-                    audioChunksRef.current.push(event.data);
-                };
-
-                mediaRecorderRef.current.onstop = () => {
-                    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                    onRecordingComplete(audioBlob);
-                    stream.getTracks().forEach(track => track.stop()); // Stop the stream
-                };
-
-                mediaRecorderRef.current.start();
-                
-                timerIntervalRef.current = setInterval(() => {
-                    setRecordingTime(prevTime => prevTime + 1);
-                }, 1000);
-
-            } catch (error) {
-                console.error("Error accessing microphone:", error);
-                toast({
-                    variant: 'destructive',
-                    title: "خطأ في الوصول للميكروفون",
-                    description: "الرجاء السماح بالوصول إلى الميكروفون في إعدادات المتصفح."
-                });
-                onCancel();
-            }
-        };
-        startRecording();
-
-        return () => {
-            if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-            }
-            if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-                mediaRecorderRef.current.stop();
-            }
-        };
-    }, [onCancel, onRecordingComplete, toast]);
-
-    const stopRecording = () => {
-        if (mediaRecorderRef.current) {
-            mediaRecorderRef.current.stop();
-             if (timerIntervalRef.current) {
-                clearInterval(timerIntervalRef.current);
-            }
-            setRecordingTime(0);
-        }
-    };
-    
-    const formatTime = (time: number) => {
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    return (
-        <div className="flex-grow flex items-center justify-between h-10 rounded-full bg-muted px-3 gap-2">
-            <Mic className="text-destructive animate-pulse h-5 w-5" />
-            <span className="text-sm font-mono text-muted-foreground">{formatTime(recordingTime)}</span>
-            <Button variant="ghost" size="icon" onClick={stopRecording}>
-                <Send className="h-5 w-5 text-primary" />
-            </Button>
-        </div>
-    );
-};
-
-
 export default function ChatPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const viewportRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   const [wallpaper, setWallpaper] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(initialMessages);
   const [mode, setMode] = useState<'text' | 'recording'>('text');
   const [audioPreview, setAudioPreview] = useState<Blob | null>(null);
-  
+  const [recordingTime, setRecordingTime] = useState(0);
+
+  const { toast } = useToast();
+
   useEffect(() => {
     if (viewportRef.current) {
       viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
     }
   }, [messages]);
-
-  const addAudioMessage = (blob: Blob) => {
-    if (blob.size > 0) {
-      setAudioPreview(blob);
-    }
-    setMode('text');
-  };
-
-  const sendAudioMessage = () => {
-    if (!audioPreview) return;
-    const url = URL.createObjectURL(audioPreview);
-    const newMessage = {
-        id: `audio-${Date.now()}`,
-        sender: 'me',
-        type: 'audio',
-        audioUrl: url,
-        timestamp: new Intl.DateTimeFormat('ar', { hour: 'numeric', minute: 'numeric' }).format(new Date()),
-    };
-    setMessages(prev => [...prev, newMessage]);
-    setAudioPreview(null);
-  }
-
-  const handleSendMessage = () => {
-    if (message.trim()) {
-        const newMessage = {
-            id: `text-${Date.now()}`,
-            sender: 'me',
-            type: 'text',
-            text: message,
-            timestamp: new Intl.DateTimeFormat('ar', { hour: 'numeric', minute: 'numeric' }).format(new Date()),
-        };
-      setMessages(prev => [...prev, newMessage]);
-      setMessage('');
-    }
-  };
   
   useEffect(() => {
       const storedWallpaper = sessionStorage.getItem('chat-wallpaper');
@@ -317,86 +210,171 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       }
   }, []);
 
-  const handleMicClick = () => {
-    if (mode === 'text' && !message.trim()) {
-      setMode('recording');
-    } else {
-      handleSendMessage();
-    }
-  }
+  const handleSendMessage = () => {
+    if (!message.trim()) return;
 
-  const renderFooterContent = () => {
+    const newMessage = {
+        id: `text-${Date.now()}`,
+        sender: 'me',
+        type: 'text',
+        text: message,
+        timestamp: new Intl.DateTimeFormat('ar', { hour: 'numeric', minute: 'numeric' }).format(new Date()),
+    };
+    setMessages(prev => [...prev, newMessage]);
+    setMessage('');
+  };
+
+  const startRecording = async () => {
+    setMode('recording');
+    audioChunksRef.current = [];
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorderRef.current = new MediaRecorder(stream);
+
+        mediaRecorderRef.current.ondataavailable = (event) => {
+            audioChunksRef.current.push(event.data);
+        };
+
+        mediaRecorderRef.current.onstop = () => {
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            if (audioBlob.size > 0) {
+              setAudioPreview(audioBlob);
+            }
+            stream.getTracks().forEach(track => track.stop());
+            setMode('text');
+        };
+
+        mediaRecorderRef.current.start();
+        
+        setRecordingTime(0);
+        timerIntervalRef.current = setInterval(() => {
+            setRecordingTime(prevTime => prevTime + 1);
+        }, 1000);
+
+    } catch (error) {
+        console.error("Error accessing microphone:", error);
+        toast({
+            variant: 'destructive',
+            title: "خطأ في الوصول للميكروفون",
+            description: "الرجاء السماح بالوصول إلى الميكروفون في إعدادات المتصفح."
+        });
+        setMode('text');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+        }
+        setRecordingTime(0);
+    }
+  };
+
+  const cancelRecording = () => {
+    stopRecording();
+    setMode('text');
+  };
+
+  const sendAudioMessage = () => {
+    if (!audioPreview) return;
+    const audioUrl = URL.createObjectURL(audioPreview);
+    const newMessage = {
+        id: `audio-${Date.now()}`,
+        sender: 'me',
+        type: 'audio',
+        audioUrl: audioUrl,
+        timestamp: new Intl.DateTimeFormat('ar', { hour: 'numeric', minute: 'numeric' }).format(new Date()),
+    };
+    setMessages(prev => [...prev, newMessage]);
+    setAudioPreview(null);
+  };
+  
+  const handleMicOrSendClick = () => {
+    if (message.trim()) {
+      handleSendMessage();
+    } else {
+      startRecording();
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+
+  const renderFooter = () => {
     if (mode === 'recording') {
-        return (
-            <>
-                <Recorder onRecordingComplete={addAudioMessage} onCancel={() => setMode('text')} />
-                <Button variant="ghost" size="icon" onClick={() => setMode('text')}>
-                    <Trash2 className="h-5 w-5 text-destructive" />
-                </Button>
-            </>
-        );
+      return (
+        <div className="flex w-full items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={cancelRecording}>
+              <Trash2 className="h-5 w-5 text-destructive" />
+          </Button>
+          <div className="flex-grow flex items-center justify-between h-10 rounded-full bg-muted px-3 gap-2">
+              <Mic className="text-destructive animate-pulse h-5 w-5" />
+              <span className="text-sm font-mono text-muted-foreground">{formatTime(recordingTime)}</span>
+          </div>
+          <Button size="icon" className="rounded-full" onClick={stopRecording}>
+              <Send className="h-5 w-5" />
+          </Button>
+        </div>
+      );
     }
 
     if (audioPreview) {
-        return (
-            <>
-                <Button variant="ghost" size="icon" onClick={() => setAudioPreview(null)}>
-                    <Trash2 className="h-5 w-5 text-destructive" />
-                </Button>
-                 <div className="flex-grow">
-                     <AudioMessage message={{ audioUrl: URL.createObjectURL(audioPreview) }} isMe={true} />
-                 </div>
-                 <Button size="icon" className="rounded-full flex-shrink-0" onClick={sendAudioMessage}>
-                    <Send className="h-5 w-5" />
-                </Button>
-            </>
-        );
+      return (
+        <div className="flex w-full items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => setAudioPreview(null)}>
+              <Trash2 className="h-5 w-5 text-destructive" />
+          </Button>
+          <div className="flex-grow rounded-2xl bg-muted">
+            <AudioMessage audioUrl={URL.createObjectURL(audioPreview)} isMe={true} />
+          </div>
+          <Button size="icon" className="rounded-full" onClick={sendAudioMessage}>
+            <Send className="h-5 w-5" />
+          </Button>
+        </div>
+      );
     }
 
     return (
-        <>
-            <Popover>
-                <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Paperclip className="h-6 w-6 text-muted-foreground" />
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-2 mb-2" side="top" align="center">
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
-                            <ImageIcon className="h-6 w-6" />
-                            <span className="text-xs">صورة</span>
-                        </Button>
-                        <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
-                            <MapPin className="h-6 w-6" />
-                            <span className="text-xs">موقع</span>
-                        </Button>
-                        <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
-                            <FileText className="h-6 w-6" />
-                            <span className="text-xs">ملف</span>
-                        </Button>
-                    </div>
-                </PopoverContent>
-            </Popover>
-            
-            <div className="flex-grow flex items-center h-10 rounded-full bg-muted px-3">
-                <Input 
-                    placeholder="اكتب رسالتك..." 
-                    className="flex-grow rounded-full bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-full p-0"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                />
-            </div>
-
-            <Button 
-                size="icon" 
-                className="rounded-full flex-shrink-0" 
-                onClick={handleMicClick}
-            >
-                {message.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+      <div className="flex w-full items-center gap-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Paperclip className="h-6 w-6 text-muted-foreground" />
             </Button>
-        </>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-2 mb-2" side="top" align="center">
+            <div className="flex gap-2">
+              <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                  <ImageIcon className="h-6 w-6" /> <span className="text-xs">صورة</span>
+              </Button>
+              <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                  <MapPin className="h-6 w-6" /> <span className="text-xs">موقع</span>
+              </Button>
+              <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
+                  <FileText className="h-6 w-6" /> <span className="text-xs">ملف</span>
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <div className="flex-grow flex items-center h-10 rounded-full bg-muted px-3">
+          <Input 
+              placeholder="اكتب رسالتك..." 
+              className="flex-grow bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-full p-0"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+          />
+        </div>
+        <Button size="icon" className="rounded-full" onClick={handleMicOrSendClick}>
+          {message.trim() ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+        </Button>
+      </div>
     );
   }
 
@@ -415,40 +393,36 @@ export default function ChatPage({ params }: { params: { id: string } }) {
           <p className="text-xs text-primary-foreground/80">{contact.status}</p>
         </div>
         <div className="flex items-center">
-            <Button variant="ghost" size="icon" className="hover:bg-black/20">
-                <Video className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="hover:bg-black/20">
-                <Phone className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="hover:bg-black/20">
-                <MoreVertical className="h-5 w-5" />
-            </Button>
+            <Button variant="ghost" size="icon" className="hover:bg-black/20"><Video className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" className="hover:bg-black/20"><Phone className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" className="hover:bg-black/20"><MoreVertical className="h-5 w-5" /></Button>
         </div>
       </header>
 
-        <div className="flex-grow relative">
-            {wallpaper && (
-                <NextImage
-                    src={wallpaper}
-                    alt="Chat background"
-                    layout="fill"
-                    objectFit="cover"
-                    className="opacity-20 dark:opacity-10"
-                />
-            )}
-            <ScrollArea className="absolute inset-0" viewportRef={viewportRef}>
-                <div className="p-4 space-y-4">
-                {messages.map((msg) => (
-                    <ChatMessage key={msg.id} message={msg} />
-                ))}
-                </div>
-            </ScrollArea>
-        </div>
+      <div className="flex-grow relative">
+          {wallpaper && (
+              <NextImage
+                  src={wallpaper}
+                  alt="Chat background"
+                  layout="fill"
+                  objectFit="cover"
+                  className="opacity-20 dark:opacity-10"
+              />
+          )}
+          <ScrollArea className="absolute inset-0" viewportRef={viewportRef}>
+              <div className="p-4 space-y-4">
+              {messages.map((msg) => (
+                  <ChatMessage key={msg.id} message={msg} />
+              ))}
+              </div>
+          </ScrollArea>
+      </div>
 
       <footer className="flex items-center gap-2 p-3 border-t bg-background">
-        {renderFooterContent()}
+        {renderFooter()}
       </footer>
     </div>
   );
 }
+
+    
