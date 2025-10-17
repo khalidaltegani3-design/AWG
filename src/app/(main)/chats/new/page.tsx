@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import Link from 'next/link';
 
 type Contact = {
     name: string[];
@@ -33,14 +34,21 @@ export default function NewChatPage() {
 
         setIsLoading(true);
         try {
-            const props = ['name', 'tel'];
+            const props = ['name', 'tel', 'icon'];
             const opts = { multiple: true };
             // @ts-ignore
             const userContacts = await navigator.contacts.select(props, opts);
 
             if (userContacts.length > 0) {
-                setContacts(userContacts);
-                setFilteredContacts(userContacts);
+                 const contactsWithAvatars = userContacts.map((contact: any) => {
+                    let avatar;
+                    if (contact.icon && contact.icon.length > 0) {
+                        avatar = URL.createObjectURL(contact.icon[0]);
+                    }
+                    return { ...contact, avatar };
+                });
+                setContacts(contactsWithAvatars);
+                setFilteredContacts(contactsWithAvatars);
                 setPermissionStatus('granted');
             } else {
                 // User closed the picker without selecting anyone
@@ -74,6 +82,18 @@ export default function NewChatPage() {
         // For now, we'll just navigate back.
         router.push(`/chats/new-chat-with-${contact.tel[0]}`);
     };
+    
+    const ActionButton = ({ icon: Icon, title, href }: { icon: React.ElementType, title: string, href: string }) => (
+      <Link href={href} className="w-full">
+        <div className="flex items-center gap-4 p-3 hover:bg-muted cursor-pointer">
+          <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
+            <Icon className="h-6 w-6" />
+          </div>
+          <p className="font-semibold text-lg">{title}</p>
+        </div>
+      </Link>
+    );
+
 
     const renderContent = () => {
         if (isLoading) {
@@ -123,10 +143,16 @@ export default function NewChatPage() {
 
         return (
             <ScrollArea className="flex-grow">
+                <div className="py-2">
+                    <ActionButton icon={Users} title="مجموعة جديدة" href="/chats/new/group" />
+                    <ActionButton icon={UserPlus} title="جهة اتصال جديدة" href="#" />
+                </div>
+                <div className="px-3 pt-4 pb-2 text-sm font-semibold text-muted-foreground">
+                   جهات الاتصال على Zoli
+                </div>
                 {filteredContacts.map((contact, index) => (
                     <div key={`${contact.tel[0]}-${index}`} className="flex items-center gap-4 p-3 hover:bg-muted cursor-pointer" onClick={() => startChat(contact)}>
                         <Avatar className="h-12 w-12">
-                            {/* In a real app, you might try to find a picture based on the number */}
                             <AvatarImage src={contact.avatar} alt={contact.name[0]} />
                             <AvatarFallback>{contact.name[0]?.substring(0, 2).toUpperCase() || '?'}</AvatarFallback>
                         </Avatar>
