@@ -7,6 +7,7 @@ import { ArrowLeft, Heart, MessageCircle, MoreVertical } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
 
 
 const publicProfile = {
@@ -27,22 +28,24 @@ const userBlinks = [
 ];
 
 const BlinkCard = ({ blink }: { blink: (typeof userBlinks)[0] }) => (
-    <div className="relative group aspect-[9/16] bg-muted rounded-lg overflow-hidden">
-        <img src={blink.url} className="w-full h-full object-cover" alt="Blink content"/>
-        <div className="absolute inset-0 bg-black/30"></div>
-        <div className="absolute bottom-0 left-0 right-0 p-2 text-white bg-gradient-to-t from-black/70 to-transparent">
-            <div className="flex justify-around">
-                <div className="flex items-center gap-1">
-                    <Heart className="h-4 w-4" />
-                    <span className="text-xs font-bold">{blink.likes}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <MessageCircle className="h-4 w-4" />
-                    <span className="text-xs font-bold">{blink.comments}</span>
+    <Link href="/blinks">
+        <div className="relative group aspect-[9/16] bg-muted rounded-lg overflow-hidden cursor-pointer">
+            <img src={blink.url} className="w-full h-full object-cover" alt="Blink content"/>
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
+            <div className="absolute bottom-0 left-0 right-0 p-2 text-white bg-gradient-to-t from-black/70 to-transparent">
+                <div className="flex justify-around">
+                    <div className="flex items-center gap-1">
+                        <Heart className="h-4 w-4" />
+                        <span className="text-xs font-bold">{blink.likes}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <MessageCircle className="h-4 w-4" />
+                        <span className="text-xs font-bold">{blink.comments}</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </Link>
 );
 
 
@@ -123,5 +126,3 @@ export default function PublicProfilePage() {
     </div>
   );
 }
-
-    
