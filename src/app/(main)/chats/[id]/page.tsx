@@ -209,17 +209,10 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   };
   
     useEffect(() => {
-    // This is a temporary solution to apply wallpaper for the demo.
-    // In a real app, this would come from a global state or server.
-    const handleStorageChange = () => {
         const storedWallpaper = sessionStorage.getItem('chat-wallpaper');
         if (storedWallpaper) {
             setWallpaper(storedWallpaper);
         }
-    };
-    handleStorageChange(); // Initial load
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   return (
@@ -341,3 +334,5 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    
