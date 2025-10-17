@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'Shamil App',
-  description: 'Shamil',
+  title: 'Zoli App',
+  description: 'Zoli',
 };
 
 export default function RootLayout({

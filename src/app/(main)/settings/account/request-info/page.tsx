@@ -35,7 +35,7 @@ export default function RequestInfoPage() {
                     </div>
                     <CardTitle>طلب تقرير الحساب</CardTitle>
                     <CardDescription className="max-w-md mx-auto">
-                       اطلب تقريرًا بمعلومات حسابك في شامل وإعداداته، والذي يمكنك نقله إلى تطبيق آخر. لا يتضمن هذا التقرير رسائلك.
+                       اطلب تقريرًا بمعلومات حسابك في Zoli وإعداداته، والذي يمكنك نقله إلى تطبيق آخر. لا يتضمن هذا التقرير رسائلك.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -37,7 +37,7 @@ export default function SecurityPage() {
         <div className="flex-grow">
             <div className="p-4">
                  <p className="text-sm text-muted-foreground">
-                    يقوم شامل بتأمين محادثاتك ومعلوماتك.
+                    يقوم Zoli بتأمين محادثاتك ومعلوماتك.
                  </p>
             </div>
             <Separator />
@@ -60,7 +60,7 @@ export default function SecurityPage() {
                     <h3 className="text-lg font-semibold text-primary">التحقق بخطوتين</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                    لمزيد من الحماية، قم بتمكين التحقق بخطوتين، والذي سيتطلب رقمًا تعريفيًا عند تسجيل رقم هاتفك مع شامل مرة أخرى.
+                    لمزيد من الحماية، قم بتمكين التحقق بخطوتين، والذي سيتطلب رقمًا تعريفيًا عند تسجيل رقم هاتفك مع Zoli مرة أخرى.
                 </p>
                 <Button className="w-full">
                     تمكين
