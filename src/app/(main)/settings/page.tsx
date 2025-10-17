@@ -61,7 +61,7 @@ export default function SettingsPage() {
       </header>
       <UserProfileLink />
       <div className="flex-grow py-2">
-        <SettingsItem icon={KeyRound} title="الحساب" description="خصوصية، أمان، تغيير الرقم" href="#" />
+        <SettingsItem icon={KeyRound} title="الحساب" description="خصوصية، أمان، تغيير الرقم" href="/settings/account" />
         <SettingsItem icon={Users} title="القناة" description="إدارة ملفك الشخصي ومحتواك" href="/settings/profile" />
         <SettingsItem icon={Lock} title="الخصوصية" description="حظر جهات الاتصال، الرسائل المؤقتة" href="#" />
         <SettingsItem icon={MessageCircle} title="المحادثات" description="السمات، الخلفيات، سجل المحادثات" href="#" />
