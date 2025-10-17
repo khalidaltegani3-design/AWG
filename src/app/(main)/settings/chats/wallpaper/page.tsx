@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
@@ -21,8 +22,19 @@ const defaultWallpapers = [
 export default function WallpaperPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const [currentWallpaper, setCurrentWallpaper] = useState<string | null>(defaultWallpapers[0]);
+    const [currentWallpaper, setCurrentWallpaper] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+     // Load initial wallpaper from session storage on client
+    useState(() => {
+        const stored = sessionStorage.getItem('chat-wallpaper');
+        if (stored) {
+            setCurrentWallpaper(stored);
+        } else {
+            setCurrentWallpaper(defaultWallpapers[0]);
+        }
+    });
+
 
     const handleSetWallpaper = (url: string) => {
         setCurrentWallpaper(url);
@@ -49,11 +61,10 @@ export default function WallpaperPage() {
     }
 
     const handleApplyWallpaper = () => {
-        // In a real native app, you would save this preference to a database or native storage.
-        // For now, we'll just show a confirmation.
+        // For web preview, we use session storage.
+        // In a native app, this would use native storage APIs.
         if (currentWallpaper) {
-            // We would need a global state management or a server call here.
-            // For example: updateChatWallpaper(currentWallpaper);
+            sessionStorage.setItem('chat-wallpaper', currentWallpaper);
             toast({
                 title: "تم تعيين الخلفية",
                 description: "سيتم تطبيق الخلفية الجديدة على محادثاتك.",

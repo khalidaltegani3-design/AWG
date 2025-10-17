@@ -64,7 +64,7 @@ const SharedBlinkMessage = ({ message }: { message: any }) => (
     </div>
 );
 
-const AudioMessage = ({ message }: { message: any }) => {
+const AudioMessage = ({ message, isMe }: { message: any, isMe: boolean }) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -117,14 +117,14 @@ const AudioMessage = ({ message }: { message: any }) => {
     return (
         <div className="flex items-center gap-3 w-60">
             <audio ref={audioRef} src={message.audioUrl} preload="metadata" />
-            <Button onClick={togglePlay} size="icon" variant="ghost" className="rounded-full flex-shrink-0 h-10 w-10">
+            <Button onClick={togglePlay} size="icon" variant="ghost" className={cn("rounded-full flex-shrink-0 h-10 w-10", isMe ? 'text-primary-foreground hover:bg-white/20' : 'text-foreground')}>
                 {isPlaying ? <Pause className="w-5 h-5"/> : <Play className="w-5 h-5" />}
             </Button>
             <div className="flex-grow flex items-center gap-2">
-                 <div className="w-full bg-muted-foreground/30 h-1 rounded-full">
-                    <div className="bg-primary h-1 rounded-full" style={{ width: `${progress}%` }}></div>
+                 <div className={cn("w-full h-1 rounded-full", isMe ? 'bg-primary-foreground/30' : 'bg-muted-foreground/30')}>
+                    <div className={cn("h-1 rounded-full", isMe ? 'bg-white' : 'bg-primary')} style={{ width: `${progress}%` }}></div>
                 </div>
-                <span className="text-xs text-muted-foreground">{formatTime(duration)}</span>
+                <span className={cn("text-xs", isMe ? 'text-primary-foreground/70' : 'text-muted-foreground/70')}>{formatTime(duration)}</span>
             </div>
         </div>
     )
@@ -141,7 +141,7 @@ const ChatMessage = ({ message }: { message: any }) => {
           case 'sharedBlink':
               return <SharedBlinkMessage message={message} />;
           case 'audio':
-              return <AudioMessage message={message} />
+              return <AudioMessage message={message} isMe={isMe} />
           default:
               return null;
       }
@@ -150,8 +150,9 @@ const ChatMessage = ({ message }: { message: any }) => {
   return (
     <div className={cn("flex items-end gap-2", isMe ? 'justify-end' : 'justify-start')}>
       <div className={cn(
-        "max-w-xs md:max-w-md p-2 rounded-2xl",
+        "max-w-xs md:max-w-md rounded-2xl",
         isMe ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted rounded-bl-sm',
+        message.type === 'text' && 'p-3',
         message.type !== 'text' && 'p-1'
       )}>
         {renderContent()}
@@ -167,7 +168,7 @@ const ChatMessage = ({ message }: { message: any }) => {
   );
 };
 
-const Recorder = ({ onRecordingComplete }: { onRecordingComplete: (blob: Blob) => void }) => {
+const Recorder = ({ onRecordingComplete, onCancel }: { onRecordingComplete: (blob: Blob) => void, onCancel: () => void }) => {
     const [isRecording, setIsRecording] = useState(false);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
@@ -179,6 +180,10 @@ const Recorder = ({ onRecordingComplete }: { onRecordingComplete: (blob: Blob) =
         return () => {
             if (timerIntervalRef.current) {
                 clearInterval(timerIntervalRef.current);
+            }
+            // Stop any active stream on unmount
+             if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
             }
         };
     }, []);
@@ -213,6 +218,7 @@ const Recorder = ({ onRecordingComplete }: { onRecordingComplete: (blob: Blob) =
                 title: "خطأ في الوصول للميكروفون",
                 description: "الرجاء السماح بالوصول إلى الميكروفون في إعدادات المتصفح."
             });
+            onCancel(); // Cancel recording mode if permission is denied
         }
     };
 
@@ -303,11 +309,11 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   
     useEffect(() => {
         // This is where native storage would be used.
-        // For now, it's disabled.
-        // const storedWallpaper = sessionStorage.getItem('chat-wallpaper');
-        // if (storedWallpaper) {
-        //     setWallpaper(storedWallpaper);
-        // }
+        // For now, we'll use session storage for web preview.
+        const storedWallpaper = sessionStorage.getItem('chat-wallpaper');
+        if (storedWallpaper) {
+            setWallpaper(storedWallpaper);
+        }
   }, []);
 
   const handleMicClick = () => {
@@ -370,7 +376,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       <footer className="flex items-center gap-2 p-3 border-t bg-background">
         {mode === 'recording' ? (
             <>
-                <Recorder onRecordingComplete={addAudioMessage} />
+                <Recorder onRecordingComplete={addAudioMessage} onCancel={() => setMode('text')} />
                 <Button variant="ghost" size="icon" onClick={() => setMode('text')}>
                     <Trash2 className="h-5 w-5 text-destructive" />
                 </Button>
@@ -381,7 +387,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                     <Trash2 className="h-5 w-5 text-destructive" />
                 </Button>
                  <div className="flex-grow">
-                     <AudioMessage message={{ audioUrl: URL.createObjectURL(audioPreview) }} />
+                     <AudioMessage message={{ audioUrl: URL.createObjectURL(audioPreview) }} isMe={true} />
                  </div>
                  <Button size="icon" className="rounded-full flex-shrink-0" onClick={sendAudioMessage}>
                     <Send className="h-5 w-5" />
@@ -437,4 +443,3 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   );
 }
 
-    
