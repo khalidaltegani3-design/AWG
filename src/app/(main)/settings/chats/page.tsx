@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ArrowLeft, Sun, Moon, Laptop, Wallpaper, Download, Archive, Eraser, Trash2 } from 'lucide-react';
@@ -10,15 +9,22 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useTheme } from 'next-themes';
+import Link from 'next/link';
 
-const SettingsActionItem = ({ icon: Icon, title, description, actionText, onActionClick }: { icon: React.ElementType; title: string; description?: string; actionText: string; onActionClick?: () => void; }) => (
+const SettingsActionItem = ({ icon: Icon, title, description, actionText, href }: { icon: React.ElementType; title: string; description?: string; actionText: string; href?: string; }) => (
     <div className="flex items-center gap-6 p-4">
       <Icon className="h-6 w-6 text-muted-foreground" />
       <div className="flex-grow">
         <p className="text-lg">{title}</p>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
-      <Button variant="ghost" onClick={onActionClick}>{actionText}</Button>
+      {href ? (
+          <Link href={href}>
+             <Button variant="ghost">{actionText}</Button>
+          </Link>
+      ) : (
+        <Button variant="ghost">{actionText}</Button>
+      )}
     </div>
 );
 
@@ -79,7 +85,7 @@ export default function ChatSettingsPage() {
                         </div>
                     </RadioGroup>
                     <Separator />
-                    <SettingsActionItem icon={Wallpaper} title="الخلفية" actionText="تغيير" />
+                    <SettingsActionItem icon={Wallpaper} title="الخلفية" actionText="تغيير" href="/settings/chats/wallpaper" />
                 </div>
             </div>
             

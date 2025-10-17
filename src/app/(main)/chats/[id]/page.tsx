@@ -1,7 +1,6 @@
-
 'use client';
 
-import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image, MapPin, FileText, PlaySquare } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image as ImageIcon, MapPin, FileText, PlaySquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import NextImage from 'next/image';
 import Link from 'next/link';
 
@@ -95,12 +94,28 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const [wallpaper, setWallpaper] = useState<string | null>(null);
 
   useEffect(() => {
     // Scroll to bottom on initial load
     if (viewportRef.current) {
       viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
     }
+    // Load wallpaper from localStorage
+    const savedWallpaper = localStorage.getItem('chatWallpaper');
+    if (savedWallpaper) {
+        setWallpaper(savedWallpaper);
+    }
+
+    const handleStorageChange = () => {
+        const newWallpaper = localStorage.getItem('chatWallpaper');
+        setWallpaper(newWallpaper);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   return (
@@ -132,13 +147,24 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       </header>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-grow bg-muted/40" ref={scrollAreaRef} viewportRef={viewportRef}>
-        <div className="p-4 space-y-4">
-          {messages.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} />
-          ))}
+        <div className="flex-grow relative">
+            {wallpaper && (
+                <NextImage
+                    src={wallpaper}
+                    alt="Chat background"
+                    layout="fill"
+                    objectFit="cover"
+                    className="opacity-20 dark:opacity-10"
+                />
+            )}
+            <ScrollArea className="absolute inset-0" ref={scrollAreaRef} viewportRef={viewportRef}>
+                <div className="p-4 space-y-4">
+                {messages.map((msg) => (
+                    <ChatMessage key={msg.id} message={msg} />
+                ))}
+                </div>
+            </ScrollArea>
         </div>
-      </ScrollArea>
 
       {/* Chat Input */}
       <footer className="flex items-center gap-2 p-3 border-t bg-background">
@@ -151,7 +177,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
             <PopoverContent className="w-auto p-2 mb-2" side="top" align="center">
                 <div className="flex gap-2">
                     <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
-                        <Image className="h-6 w-6" />
+                        <ImageIcon className="h-6 w-6" />
                         <span className="text-xs">صورة</span>
                     </Button>
                     <Button variant="outline" size="icon" className="h-14 w-14 flex-col gap-1">
