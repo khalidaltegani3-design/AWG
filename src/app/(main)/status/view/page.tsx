@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MoreVertical, Send, X } from 'lucide-react';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 
 const users = {
   ahmed: {
@@ -39,6 +40,8 @@ function StatusViewContent() {
   const [currentUser, setCurrentUser] = useState(users[userId] || Object.values(users)[0]);
   const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [reply, setReply] = useState('');
+  const { toast } = useToast();
 
   const currentStatus = currentUser.statuses[currentStatusIndex];
 
@@ -89,6 +92,18 @@ function StatusViewContent() {
       setCurrentStatusIndex(prev => prev - 1);
     }
   };
+
+  const handleReply = () => {
+    if (!reply.trim()) return;
+
+    // In a real app, this would send the reply to a server.
+    toast({
+        title: "تم إرسال الرد",
+        description: `ردك "${reply}" أرسل إلى ${currentUser.name}.`
+    });
+
+    setReply('');
+  }
   
   if (!currentUser || !currentStatus) {
     // Or a loading spinner
@@ -158,9 +173,12 @@ function StatusViewContent() {
           <div className="flex items-center gap-2">
             <Input 
                 placeholder={`الرد على ${currentUser.name}...`}
-                className="flex-grow rounded-full bg-black/50 border-white/30 text-white placeholder:text-neutral-300 focus:ring-offset-black focus:ring-white" 
+                className="flex-grow rounded-full bg-black/50 border-white/30 text-white placeholder:text-neutral-300 focus:ring-offset-black focus:ring-white"
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleReply() }}
             />
-            <Button size="icon" variant="ghost" className="text-white hover:bg-white/10">
+            <Button size="icon" variant="ghost" className="text-white hover:bg-white/10" onClick={handleReply}>
               <Send />
             </Button>
         </div>
