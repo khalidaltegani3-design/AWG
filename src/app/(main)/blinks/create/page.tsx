@@ -3,22 +3,125 @@
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, GalleryVertical } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-const CameraToolButton = ({ icon: Icon, label }: { icon: React.ElementType, label: string }) => (
-    <Button variant="ghost" className="flex flex-col items-center h-auto text-white hover:bg-black/20 p-2">
+
+const CameraToolButton = ({ icon: Icon, label, onClick, active }: { icon: React.ElementType, label: string, onClick?: () => void, active?: boolean }) => (
+    <Button variant="ghost" className={cn("flex flex-col items-center h-auto text-white hover:bg-black/20 p-2", active && "text-secondary")} onClick={onClick}>
         <Icon className="h-7 w-7" />
         <span className="text-xs mt-1">{label}</span>
     </Button>
 );
 
+const SpeedControl = ({ onSelect, currentSpeed }: { onSelect: (speed: number) => void, currentSpeed: number }) => {
+    const speeds = [0.5, 1, 2];
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="ghost" className={cn("flex flex-col items-center h-auto text-white hover:bg-black/20 p-2", currentSpeed !== 1 && 'text-secondary')}>
+                    <Gauge className="h-7 w-7" />
+                    <span className="text-xs mt-1">السرعة</span>
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent side="left" className="w-auto p-2 bg-black/50 border-white/20 text-white flex flex-col gap-2">
+                {speeds.map(speed => (
+                    <Button key={speed} variant={currentSpeed === speed ? 'secondary' : 'ghost'} onClick={() => onSelect(speed)}>
+                        {speed}x
+                    </Button>
+                ))}
+            </PopoverContent>
+        </Popover>
+    )
+};
+
+const TimerControl = ({ onSelect, currentTimer }: { onSelect: (timer: number) => void, currentTimer: number }) => {
+    const timers = [3, 10];
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                 <Button variant="ghost" className={cn("flex flex-col items-center h-auto text-white hover:bg-black/20 p-2", currentTimer > 0 && 'text-secondary')}>
+                    <Timer className="h-7 w-7" />
+                    <span className="text-xs mt-1">المؤقت</span>
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent side="left" className="w-auto p-2 bg-black/50 border-white/20 text-white flex flex-col gap-2">
+                 <Button variant={currentTimer === 0 ? 'secondary' : 'ghost'} onClick={() => onSelect(0)}>إيقاف</Button>
+                {timers.map(time => (
+                    <Button key={time} variant={currentTimer === time ? 'secondary' : 'ghost'} onClick={() => onSelect(time)}>
+                        {time} ثانية
+                    </Button>
+                ))}
+            </PopoverContent>
+        </Popover>
+    )
+};
+
+
 export default function CreateBlinkPage() {
   const router = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState(true);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [speed, setSpeed] = useState(1);
+  const [timer, setTimer] = useState(0);
+  const [effectsActive, setEffectsActive] = useState(false);
+  const { toast } = useToast();
+
+    useEffect(() => {
+    let stream: MediaStream;
+    
+    const getCameraPermission = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
+        setHasCameraPermission(true);
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'لم يتم العثور على كاميرا',
+          description: 'الرجاء تمكين أذونات الكاميرا في متصفحك لاستخدام هذه الميزة.',
+        });
+      }
+    };
+
+    getCameraPermission();
+
+    // Cleanup function to stop the camera stream when the component unmounts
+    return () => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    };
+  }, [facingMode, toast]);
+
+  const handleFlipCamera = () => {
+      setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+  }
 
   return (
     <div className="relative h-full w-full bg-black text-white flex flex-col">
-      {/* Camera View Placeholder */}
+      {/* Camera View */}
       <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
-          <p className="text-neutral-600">Camera View</p>
+            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+            {!hasCameraPermission && (
+                 <div className="absolute z-20 p-4">
+                    <Alert variant="destructive">
+                      <AlertTitle>الكاميرا غير متاحة</AlertTitle>
+                      <AlertDescription>
+                        يرجى السماح بالوصول إلى الكاميرا في إعدادات المتصفح.
+                      </AlertDescription>
+                    </Alert>
+                </div>
+            )}
       </div>
 
       {/* Top Controls */}
@@ -34,10 +137,10 @@ export default function CreateBlinkPage() {
 
       {/* Right Side Controls */}
       <aside className="absolute top-1/2 right-4 -translate-y-1/2 z-10 flex flex-col gap-4 bg-black/20 p-2 rounded-full">
-        <CameraToolButton icon={FlipHorizontal} label="قلب" />
-        <CameraToolButton icon={Gauge} label="السرعة" />
-        <CameraToolButton icon={Timer} label="المؤقت" />
-        <CameraToolButton icon={Sparkles} label="المؤثرات" />
+        <CameraToolButton icon={FlipHorizontal} label="قلب" onClick={handleFlipCamera} />
+        <SpeedControl onSelect={setSpeed} currentSpeed={speed} />
+        <TimerControl onSelect={setTimer} currentTimer={timer} />
+        <CameraToolButton icon={Sparkles} label="المؤثرات" onClick={() => setEffectsActive(prev => !prev)} active={effectsActive} />
       </aside>
 
       {/* Bottom Controls */}
