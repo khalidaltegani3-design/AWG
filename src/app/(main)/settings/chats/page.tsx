@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, Sun, Moon, Laptop, Wallpaper } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Laptop, Wallpaper, Download, Archive, Eraser, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
