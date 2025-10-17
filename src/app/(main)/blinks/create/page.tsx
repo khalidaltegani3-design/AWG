@@ -2,12 +2,22 @@
 
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, GalleryVertical, UserSquare } from 'lucide-react';
+import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, GalleryVertical, UserSquare, Search, Play, Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Input } from '@/components/ui/input';
+import Image from 'next/image';
+
+const mockSounds = [
+    { id: 1, title: "الصوت الأصلي", artist: "nawaf_dev", duration: "0:15", cover: "https://i.pravatar.cc/150?u=a042581f4e29026704d" },
+    { id: 2, title: "Tokyo Drift", artist: "Teriyaki Boyz", duration: "2:05", cover: "https://i.pravatar.cc/150?u=a042581f4e29026705d" },
+    { id: 3, title: "Morning Coffee", artist: "Jazzy Tunes", duration: "3:10", cover: "https://i.pravatar.cc/150?u=a042581f4e29026707d" },
+    { id: 4, title: "Desert Dreams", artist: "Oasis Vibes", duration: "1:45", cover: "https://i.pravatar.cc/150?u=a042581f4e29026708d" },
+];
 
 
 const CameraToolButton = ({ icon: Icon, label, onClick, active }: { icon: React.ElementType, label: string, onClick?: () => void, active?: boolean }) => (
@@ -104,6 +114,8 @@ export default function CreateBlinkPage() {
   const [timer, setTimer] = useState(0);
   const [activeFilter, setActiveFilter] = useState('filter-none');
   const [isAiBackgroundActive, setIsAiBackgroundActive] = useState(false);
+  const [selectedSound, setSelectedSound] = useState<typeof mockSounds[0] | null>(null);
+  const [soundSheetOpen, setSoundSheetOpen] = useState(false);
   const { toast } = useToast();
 
     useEffect(() => {
@@ -130,7 +142,6 @@ export default function CreateBlinkPage() {
 
     getCameraPermission();
 
-    // Cleanup function to stop the camera stream when the component unmounts
     return () => {
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
@@ -142,9 +153,17 @@ export default function CreateBlinkPage() {
       setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
   }
 
+  const handleSelectSound = (sound: typeof mockSounds[0]) => {
+      setSelectedSound(sound);
+      setSoundSheetOpen(false);
+      toast({
+          title: "تم اختيار الصوت",
+          description: `تم اختيار "${sound.title}"`,
+      });
+  }
+
   return (
     <div className="relative h-full w-full bg-black text-white flex flex-col">
-      {/* Camera View */}
       <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
             <video ref={videoRef} className={cn("w-full h-full object-cover", activeFilter)} autoPlay muted playsInline />
             {!hasCameraPermission && (
@@ -159,18 +178,51 @@ export default function CreateBlinkPage() {
             )}
       </div>
 
-      {/* Top Controls */}
       <header className="absolute top-0 left-0 right-0 z-10 flex justify-between items-center p-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()} className="bg-black/30 hover:bg-black/50 rounded-full">
             <X className="h-6 w-6" />
         </Button>
-        <Button variant="ghost" className="bg-black/30 hover:bg-black/50 rounded-full text-sm font-semibold h-10 px-4">
-            <Music className="h-5 w-5 mr-2" />
-            إضافة صوت
-        </Button>
+        <Sheet open={soundSheetOpen} onOpenChange={setSoundSheetOpen}>
+            <SheetTrigger asChild>
+                 <Button variant="ghost" className="bg-black/30 hover:bg-black/50 rounded-full text-sm font-semibold h-10 px-4 max-w-[200px] truncate">
+                    <Music className="h-5 w-5 mr-2 flex-shrink-0" />
+                    <span className="truncate">{selectedSound?.title || 'إضافة صوت'}</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[80%] bg-black/80 backdrop-blur-md border-t border-white/20 text-white flex flex-col rounded-t-2xl">
+                 <SheetHeader className="text-center">
+                    <SheetTitle className="text-white">اختيار الصوت</SheetTitle>
+                </SheetHeader>
+                <div className="relative my-4">
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+                    <Input placeholder="البحث في SoundCloud..." className="bg-neutral-800 border-neutral-700 rounded-full pl-4 pr-10 focus:ring-offset-black focus:ring-white" />
+                </div>
+                <div className="flex-grow overflow-y-auto -mx-6 px-6 space-y-2">
+                    {mockSounds.map(sound => (
+                        <div key={sound.id} className="flex items-center gap-4 p-2 hover:bg-white/10 rounded-lg">
+                            <div className="relative h-14 w-14 rounded-md overflow-hidden flex-shrink-0">
+                                <Image src={sound.cover} alt={sound.title} fill className="object-cover" />
+                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white rounded-full bg-black/40 hover:bg-black/60">
+                                        <Play className="h-4 w-4 fill-white"/>
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="flex-grow overflow-hidden">
+                                <p className="font-semibold truncate">{sound.title}</p>
+                                <p className="text-xs text-neutral-400 truncate">{sound.artist}</p>
+                            </div>
+                            <Button size="sm" className="bg-secondary hover:bg-secondary/80 text-secondary-foreground" onClick={() => handleSelectSound(sound)}>
+                                <Check className="h-4 w-4 ml-1" />
+                                اختيار
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+            </SheetContent>
+        </Sheet>
       </header>
 
-      {/* Right Side Controls */}
       <aside className="absolute top-1/2 right-4 -translate-y-1/2 z-10 flex flex-col gap-4 bg-black/20 p-2 rounded-full">
         <CameraToolButton icon={FlipHorizontal} label="قلب" onClick={handleFlipCamera} />
         <SpeedControl onSelect={setSpeed} currentSpeed={speed} />
@@ -179,19 +231,17 @@ export default function CreateBlinkPage() {
         <CameraToolButton icon={UserSquare} label="خلفية AI" onClick={() => setIsAiBackgroundActive(prev => !prev)} active={isAiBackgroundActive} />
       </aside>
 
-      {/* Bottom Controls */}
       <footer className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center p-6">
         <div className="flex items-center gap-16 w-full justify-center">
             <Button variant="outline" className="h-16 w-16 bg-black/30 border-white/50 hover:bg-black/50 p-0">
                 <GalleryVertical className="h-8 w-8" />
             </Button>
 
-            {/* Record Button */}
             <div className="relative flex items-center justify-center h-24 w-24">
                 <button className="absolute h-20 w-20 bg-red-600 rounded-full border-4 border-white shadow-lg transition-transform active:scale-95" />
             </div>
 
-            <div className="h-16 w-16" /> {/* Spacer to balance layout */}
+            <div className="h-16 w-16" />
         </div>
       </footer>
     </div>
