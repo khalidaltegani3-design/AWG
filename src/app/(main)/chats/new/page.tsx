@@ -14,7 +14,7 @@ import Link from 'next/link';
 type Contact = {
     name: string[];
     tel: string[];
-    avatar?: string; // Assuming we might get an avatar URL in the future
+    avatar?: string; 
 }
 
 export default function NewChatPage() {
@@ -52,7 +52,7 @@ export default function NewChatPage() {
                 setPermissionStatus('granted');
             } else {
                 // User closed the picker without selecting anyone
-                if(contacts.length === 0) router.back();
+                if(contacts.length === 0) setPermissionStatus('prompt');
             }
         } catch (error) {
             console.error('Error fetching contacts:', error);
@@ -79,20 +79,25 @@ export default function NewChatPage() {
     const startChat = (contact: Contact) => {
         // In a real app, you'd check if this user exists in your backend
         // and then navigate to a chat with their user ID.
-        // For now, we'll just navigate back.
         router.push(`/chats/new-chat-with-${contact.tel[0]}`);
     };
     
-    const ActionButton = ({ icon: Icon, title, href }: { icon: React.ElementType, title: string, href: string }) => (
-      <Link href={href} className="w-full">
-        <div className="flex items-center gap-4 p-3 hover:bg-muted cursor-pointer">
-          <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
-            <Icon className="h-6 w-6" />
-          </div>
-          <p className="font-semibold text-lg">{title}</p>
-        </div>
-      </Link>
-    );
+    const ActionButton = ({ icon: Icon, title, href, onClick }: { icon: React.ElementType, title: string, href?: string, onClick?: () => void }) => {
+        const content = (
+             <div className="flex items-center gap-4 p-3 hover:bg-muted cursor-pointer w-full">
+              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-primary-foreground">
+                <Icon className="h-6 w-6" />
+              </div>
+              <p className="font-semibold text-lg">{title}</p>
+            </div>
+        );
+
+        if (href) {
+            return <Link href={href} className="w-full">{content}</Link>;
+        }
+        
+        return <button onClick={onClick} className="w-full">{content}</button>;
+    };
 
 
     const renderContent = () => {
@@ -122,48 +127,38 @@ export default function NewChatPage() {
             );
         }
         
-        if (permissionStatus === 'prompt') {
-            return (
-                 <div className="text-center p-8 text-muted-foreground space-y-4">
-                    <Users className="h-12 w-12 mx-auto" />
-                    <h3 className="text-lg font-semibold">البحث عن أصدقائك</h3>
-                    <p>اسمح لـ Zoli بالوصول إلى جهات اتصالك للعثور على أصدقائك الذين يستخدمون التطبيق.</p>
-                    <Button onClick={fetchContacts}>البحث عن جهات الاتصال</Button>
-                </div>
-            )
-        }
-
-        if (contacts.length === 0) {
+        if (permissionStatus === 'granted' && contacts.length === 0) {
             return (
                 <div className="text-center p-8 text-muted-foreground">
-                    لم يتم اختيار أي جهات اتصال.
+                    لم يتم اختيار أي جهات اتصال. <Button variant="link" onClick={fetchContacts}>حاول مرة أخرى</Button>
                 </div>
             );
         }
 
-        return (
-            <ScrollArea className="flex-grow">
-                <div className="py-2">
-                    <ActionButton icon={Users} title="مجموعة جديدة" href="/chats/new/group" />
-                    <ActionButton icon={UserPlus} title="جهة اتصال جديدة" href="#" />
-                </div>
-                <div className="px-3 pt-4 pb-2 text-sm font-semibold text-muted-foreground">
-                   جهات الاتصال على Zoli
-                </div>
-                {filteredContacts.map((contact, index) => (
-                    <div key={`${contact.tel[0]}-${index}`} className="flex items-center gap-4 p-3 hover:bg-muted cursor-pointer" onClick={() => startChat(contact)}>
-                        <Avatar className="h-12 w-12">
-                            <AvatarImage src={contact.avatar} alt={contact.name[0]} />
-                            <AvatarFallback>{contact.name[0]?.substring(0, 2).toUpperCase() || '?'}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-grow">
-                            <p className="font-semibold">{contact.name[0]}</p>
-                            <p className="text-sm text-muted-foreground truncate">{contact.tel[0]}</p>
-                        </div>
+        if (permissionStatus === 'granted' && contacts.length > 0) {
+            return (
+                <ScrollArea className="flex-grow">
+                    <div className="px-3 pt-4 pb-2 text-sm font-semibold text-muted-foreground">
+                       جهات الاتصال على Zoli
                     </div>
-                ))}
-            </ScrollArea>
-        );
+                    {filteredContacts.map((contact, index) => (
+                        <div key={`${contact.tel[0]}-${index}`} className="flex items-center gap-4 p-3 hover:bg-muted cursor-pointer" onClick={() => startChat(contact)}>
+                            <Avatar className="h-12 w-12">
+                                <AvatarImage src={contact.avatar} alt={contact.name[0]} />
+                                <AvatarFallback>{contact.name[0]?.substring(0, 2).toUpperCase() || '?'}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-grow">
+                                <p className="font-semibold">{contact.name[0]}</p>
+                                <p className="text-sm text-muted-foreground truncate">{contact.tel[0]}</p>
+                            </div>
+                        </div>
+                    ))}
+                </ScrollArea>
+            )
+        }
+
+        // Default prompt state
+        return null;
     }
 
 
@@ -175,11 +170,21 @@ export default function NewChatPage() {
                 </Button>
                 <div>
                     <h1 className="text-xl font-bold">محادثة جديدة</h1>
-                    <p className="text-sm text-primary-foreground/80">{contacts.length > 0 ? `${contacts.length} جهة اتصال` : 'اختيار جهة اتصال'}</p>
+                    <p className="text-sm text-primary-foreground/80">
+                        {permissionStatus === 'granted' && contacts.length > 0 
+                            ? `${contacts.length} جهة اتصال` 
+                            : 'اختيار جهة اتصال أو مجموعة'
+                        }
+                    </p>
                 </div>
             </header>
 
-            {permissionStatus === 'granted' && (
+            <div className="py-2 border-b">
+                <ActionButton icon={Users} title="مجموعة جديدة" href="/chats/new/group" />
+                <ActionButton icon={UserPlus} title="جهة اتصال جديدة" onClick={fetchContacts} />
+            </div>
+
+            {permissionStatus === 'granted' && contacts.length > 0 && (
                  <div className="p-4 border-b">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
