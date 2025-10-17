@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageCircle, Phone, PlaySquare, Settings, User } from 'lucide-react';
+import { MessageCircle, Phone, PlaySquare, Settings, Pulse } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/chats', icon: MessageCircle, label: 'المحادثات' },
   { href: '/calls', icon: Phone, label: 'المكالمات' },
+  { href: '/status', icon: Pulse, label: 'الحالة' },
   { href: '/blinks', icon: PlaySquare, label: 'Blinks' },
   { href: '/settings', icon: Settings, label: 'الإعدادات' },
 ];
@@ -17,7 +18,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 max-w-md w-full h-16 bg-background border-t">
-      <div className="grid grid-cols-4 h-full mx-auto">
+      <div className="grid grid-cols-5 h-full mx-auto">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
