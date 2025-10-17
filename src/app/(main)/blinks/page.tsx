@@ -124,7 +124,7 @@ const BlinkItem = ({ blink, onLike, onCommentClick, onShareClick, onMoreOptionsC
             <div className="flex items-end">
                 {/* Left side: Video Info */}
                 <div className="flex-grow space-y-2 text-white">
-                    <Link href="/settings/profile" className="inline-block">
+                    <Link href="/profile" className="inline-block">
                         <div className="flex items-center gap-2">
                             <Avatar className="h-10 w-10 border-2">
                                 <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
