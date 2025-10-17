@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -55,7 +56,7 @@ const UserProfileLink = () => (
 export default function SettingsPage() {
   return (
     <div className="flex flex-col h-full">
-      <header className="flex items-center p-4 border-b bg-background sticky top-0 z-10">
+      <header className="flex items-center p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
         <h1 className="text-2xl font-bold">الإعدادات</h1>
       </header>
       <UserProfileLink />

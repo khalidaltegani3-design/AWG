@@ -59,8 +59,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   return (
     <div className="flex flex-col h-screen">
       {/* Chat Header */}
-      <header className="flex items-center gap-3 p-3 border-b bg-background sticky top-0 z-10">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+      <header className="flex items-center gap-3 p-3 border-b bg-primary text-primary-foreground sticky top-0 z-10">
+        <Button variant="ghost" size="icon" onClick={() => router.back()} className="hover:bg-black/20">
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <Avatar className="h-10 w-10">
@@ -69,16 +69,16 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         </Avatar>
         <div className="flex-grow">
           <p className="font-semibold">{contact.name}</p>
-          <p className="text-xs text-muted-foreground">{contact.status}</p>
+          <p className="text-xs text-primary-foreground/80">{contact.status}</p>
         </div>
         <div className="flex items-center">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="hover:bg-black/20">
                 <Video className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="hover:bg-black/20">
                 <Phone className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="hover:bg-black/20">
                 <MoreVertical className="h-5 w-5" />
             </Button>
         </div>

@@ -77,9 +77,9 @@ const ChatItem = ({ chat }: { chat: (typeof chats)[0] }) => (
 export default function ChatsPage() {
   return (
     <div className="flex flex-col h-full">
-      <header className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
+      <header className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
         <h1 className="text-2xl font-bold">المحادثات</h1>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="hover:bg-black/20">
             <Plus className="h-6 w-6" />
         </Button>
       </header>

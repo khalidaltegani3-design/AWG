@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -58,8 +59,8 @@ export default function ProfilePage() {
     const router = useRouter();
   return (
     <div className="flex flex-col h-full bg-background">
-        <header className="flex items-center gap-4 p-4 border-b bg-background sticky top-0 z-10">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <header className="flex items-center gap-4 p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
+            <Button variant="ghost" size="icon" onClick={() => router.back()} className="hover:bg-black/20">
               <ArrowLeft className="h-6 w-6" />
             </Button>
             <h1 className="text-xl font-bold">القناة</h1>
