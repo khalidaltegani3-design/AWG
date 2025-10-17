@@ -43,8 +43,8 @@ const contact = {
 }
 
 const SharedBlinkMessage = ({ message }: { message: any }) => (
-    <Link href="/blinks">
-        <div className="relative w-48 h-64 rounded-lg overflow-hidden cursor-pointer group">
+    <div className="relative w-48 h-64 rounded-lg overflow-hidden group">
+        <Link href="/blinks" className="absolute inset-0">
             <NextImage 
                 src={message.blink.videoUrl}
                 alt="Shared Blink"
@@ -59,8 +59,8 @@ const SharedBlinkMessage = ({ message }: { message: any }) => (
                 </div>
                 <p className="text-xs">مشاركة من رمشات</p>
             </div>
-        </div>
-    </Link>
+        </Link>
+    </div>
 );
 
 
@@ -70,7 +70,7 @@ const ChatMessage = ({ message }: { message: (typeof messages)[0] }) => {
   if ('type' in message && message.type === 'sharedBlink') {
     return (
         <div className={cn("flex items-end gap-2", isMe ? 'justify-end' : 'justify-start')}>
-             <div className="p-2 bg-primary rounded-2xl rounded-br-sm">
+             <div className={cn("p-2 rounded-2xl", isMe ? "bg-primary rounded-br-sm" : "bg-muted rounded-bl-sm")}>
                 <SharedBlinkMessage message={message} />
              </div>
         </div>
@@ -174,5 +174,3 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
-
-    
