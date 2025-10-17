@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image, MapPin, FileText } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Paperclip, Phone, Send, Video, Image, MapPin, FileText, PlaySquare } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,11 +10,25 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRef, useEffect } from 'react';
+import NextImage from 'next/image';
+import Link from 'next/link';
 
 
 const messages = [
   { id: '1', sender: 'other', text: 'أهلاً بك، كيف يمكنني مساعدتك اليوم؟', timestamp: '10:50 ص' },
   { id: '2', sender: 'me', text: 'أهلاً، أريد الاستفسار عن حالة الطلب رقم 5829', timestamp: '10:51 ص' },
+  { 
+    id: 'shared-blink', 
+    sender: 'me', 
+    type: 'sharedBlink',
+    timestamp: '10:52 ص',
+    blink: {
+        videoUrl: 'https://images.pexels.com/videos/3254013/free-video-3254013.jpg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+        user: {
+            name: '@nawaf_dev',
+        }
+    }
+  },
   { id: '3', sender: 'other', text: 'بالتأكيد، لحظة من فضلك للتحقق.', timestamp: '10:51 ص' },
   { id: '4', sender: 'other', text: 'يظهر لدي أن الطلب في مرحلة الشحن حاليًا.', timestamp: '10:52 ص' },
   { id: '5', sender: 'me', text: 'ممتاز! متى من المتوقع أن يصل؟', timestamp: '10:53 ص' },
@@ -28,8 +42,41 @@ const contact = {
   status: 'متصل الآن',
 }
 
+const SharedBlinkMessage = ({ message }: { message: any }) => (
+    <Link href="/blinks">
+        <div className="relative w-48 h-64 rounded-lg overflow-hidden cursor-pointer group">
+            <NextImage 
+                src={message.blink.videoUrl}
+                alt="Shared Blink"
+                fill
+                className="object-cover"
+            />
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors"></div>
+            <div className="absolute inset-0 flex flex-col justify-between p-2 text-white">
+                <p className="text-xs font-bold">{message.blink.user.name}</p>
+                 <div className="self-center">
+                    <PlaySquare className="h-8 w-8 text-white/80" />
+                </div>
+                <p className="text-xs">مشاركة من رمشات</p>
+            </div>
+        </div>
+    </Link>
+);
+
+
 const ChatMessage = ({ message }: { message: (typeof messages)[0] }) => {
   const isMe = message.sender === 'me';
+
+  if ('type' in message && message.type === 'sharedBlink') {
+    return (
+        <div className={cn("flex items-end gap-2", isMe ? 'justify-end' : 'justify-start')}>
+             <div className="p-2 bg-primary rounded-2xl rounded-br-sm">
+                <SharedBlinkMessage message={message} />
+             </div>
+        </div>
+    );
+  }
+
   return (
     <div className={cn("flex items-end gap-2", isMe ? 'justify-end' : 'justify-start')}>
       <div className={cn(
@@ -127,3 +174,5 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
+    

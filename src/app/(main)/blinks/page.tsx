@@ -10,6 +10,26 @@ import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
+
+// Mock data that would normally come from another file or API
+const mockChats = [
+  {
+    id: '1',
+    name: 'أحمد خليل',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
+  },
+  {
+    id: '2',
+    name: 'فاطمة عبدالله',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d',
+  },
+  {
+    id: '3',
+    name: 'مجموعة العمل',
+    avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026706d',
+  },
+];
 
 
 type Comment = {
@@ -156,7 +176,9 @@ export default function BlinksPage() {
   const [selectedBlink, setSelectedBlink] = useState<Blink | null>(null);
   const [commentInputValue, setCommentInputValue] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [isShareSheetOpen, setShareSheetOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleLike = (id: string) => {
     setBlinks(prevBlinks => 
@@ -219,13 +241,19 @@ export default function BlinksPage() {
     }
   }, [replyingTo])
 
-  const handleShare = () => {
+  const handleShareClick = () => {
     if (!selectedBlink) return;
-    console.log(`Sharing blink ${selectedBlink.id}: "${selectedBlink.description}"`);
-    // Here you would open a new dialog/sheet with a list of friends to share with.
-    // For now, we just log to the console.
-    alert(`مشاركة الفيديو "${selectedBlink.description}" مع الأصدقاء`);
+    setShareSheetOpen(true);
   }
+
+  const handleSendShare = (chatName: string) => {
+    toast({
+      title: "تمت المشاركة!",
+      description: `تم إرسال الفيديو إلى ${chatName}.`,
+    });
+    setShareSheetOpen(false);
+  }
+
 
   return (
     <div className="relative h-full w-full">
@@ -265,7 +293,7 @@ export default function BlinksPage() {
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-center gap-1">
-                                    <button onClick={() => handleLikeComment(selectedBlink.id, comment.id)}>
+                                    <button onClick={() => selectedBlink && handleLikeComment(selectedBlink.id, comment.id)}>
                                         <Heart className={cn("h-4 w-4 text-neutral-400", comment.isLiked && "fill-red-500 text-red-500")} />
                                     </button>
                                     <span className="text-xs text-neutral-400">{comment.likes}</span>
@@ -287,13 +315,41 @@ export default function BlinksPage() {
                             placeholder={replyingTo ? `الرد على ${replyingTo}...` : "إضافة تعليق..."} 
                             className="flex-grow rounded-full bg-neutral-800 border-neutral-700 focus:ring-offset-black focus:ring-white" 
                         />
-                        <Button size="icon" variant="ghost" className="rounded-full text-white" onClick={handleShare}>
+                        <Button size="icon" variant="ghost" className="rounded-full text-white" onClick={handleShareClick}>
                             <Send className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
             </SheetContent>
         </Sheet>
+        
+        {/* Share Sheet */}
+        <Sheet open={isShareSheetOpen} onOpenChange={setShareSheetOpen}>
+            <SheetContent side="bottom" className="bg-background rounded-t-2xl h-auto">
+                <SheetHeader className="text-center mb-4">
+                    <SheetTitle>مشاركة مع...</SheetTitle>
+                     <button onClick={() => setShareSheetOpen(false)} className="absolute top-4 right-4 text-muted-foreground">
+                        <X className="h-5 w-5" />
+                    </button>
+                </SheetHeader>
+                <ScrollArea className="h-[250px] pr-4">
+                     <div className="space-y-2">
+                        {mockChats.map(chat => (
+                            <div key={chat.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={chat.avatar} />
+                                    <AvatarFallback>{chat.name.substring(0, 2)}</AvatarFallback>
+                                </Avatar>
+                                <p className="flex-grow font-semibold">{chat.name}</p>
+                                <Button size="sm" onClick={() => handleSendShare(chat.name)}>إرسال</Button>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
+            </SheetContent>
+        </Sheet>
     </div>
   );
 }
+
+    
