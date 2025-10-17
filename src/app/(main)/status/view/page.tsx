@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const users = {
   ahmed: {
+    id: '1',
     name: 'أحمد خليل',
     avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
     statuses: [
@@ -21,11 +22,13 @@ const users = {
     ],
   },
   fatima: {
+    id: '2',
     name: 'فاطمة عبدالله',
     avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d',
     statuses: [{ id: 's3', type: 'image', url: 'https://images.pexels.com/photos/210186/pexels-photo-210186.jpeg', duration: 5, timestamp: 'اليوم، 3:45 م' }],
   },
   mohammed: {
+      id: '4',
       name: 'محمد علي',
       avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d',
       statuses: [{ id: 's4', type: 'image', url: 'https://images.pexels.com/photos/933054/pexels-photo-933054.jpeg', duration: 5, timestamp: 'أمس، 9:01 م' }],
@@ -35,13 +38,12 @@ const users = {
 function StatusViewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const userId = searchParams.get('user') as keyof typeof users;
+  const userIdQuery = searchParams.get('user') as keyof typeof users;
   
-  const [currentUser, setCurrentUser] = useState(users[userId] || Object.values(users)[0]);
+  const [currentUser, setCurrentUser] = useState(users[userIdQuery] || Object.values(users)[0]);
   const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [reply, setReply] = useState('');
-  const { toast } = useToast();
 
   const currentStatus = currentUser.statuses[currentStatusIndex];
 
@@ -69,14 +71,14 @@ function StatusViewContent() {
   }, [currentStatusIndex, currentUser, router, currentStatus.duration]);
   
   useEffect(() => {
-      const user = users[userId];
+      const user = users[userIdQuery];
       if (user) {
           setCurrentUser(user);
           setCurrentStatusIndex(0);
       } else {
           router.back();
       }
-  }, [userId, router]);
+  }, [userIdQuery, router]);
 
 
   const goToNext = () => {
@@ -97,11 +99,8 @@ function StatusViewContent() {
     if (!reply.trim()) return;
 
     // In a real app, this would send the reply to a server.
-    toast({
-        title: "تم إرسال الرد",
-        description: `ردك "${reply}" أرسل إلى ${currentUser.name}.`
-    });
-
+    // For now, we simulate it by navigating to the chat.
+    router.push(`/chats/${currentUser.id}`);
     setReply('');
   }
   
