@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Camera, Edit } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 
@@ -35,28 +35,30 @@ type Status = {
 };
 
 const recentUpdates: Status[] = [
-    { id: '1', name: 'أحمد خليل', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', timestamp: 'منذ 10 دقائق' },
-    { id: '2', name: 'فاطمة عبدالله', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d', timestamp: 'اليوم، 3:45 م' },
+    { id: 'ahmed', name: 'أحمد خليل', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', timestamp: 'منذ 10 دقائق' },
+    { id: 'fatima', name: 'فاطمة عبدالله', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d', timestamp: 'اليوم، 3:45 م' },
 ];
 
 const viewedUpdates: Status[] = [
-    { id: '3', name: 'محمد علي', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d', timestamp: 'أمس، 9:01 م', isViewed: true },
+    { id: 'mohammed', name: 'محمد علي', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d', timestamp: 'أمس، 9:01 م', isViewed: true },
 ];
 
 const StatusItem = ({ status }: { status: Status }) => (
-    <div className="flex items-center gap-4 p-4 hover:bg-muted cursor-pointer">
-        <div className="relative p-0.5 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500">
-             <Avatar className={`h-14 w-14 border-2 ${status.isViewed ? 'border-muted' : 'border-background'}`}>
-                <AvatarImage src={status.avatar} alt={status.name} />
-                <AvatarFallback>{status.name.substring(0, 2)}</AvatarFallback>
-            </Avatar>
+    <Link href={`/status/view?user=${status.id}`} className="w-full">
+        <div className="flex items-center gap-4 p-4 hover:bg-muted cursor-pointer">
+            <div className={`relative p-0.5 rounded-full ${status.isViewed ? 'bg-muted' : 'bg-gradient-to-tr from-yellow-400 to-pink-500'}`}>
+                 <Avatar className={`h-14 w-14 border-2 ${status.isViewed ? 'border-muted' : 'border-background'}`}>
+                    <AvatarImage src={status.avatar} alt={status.name} />
+                    <AvatarFallback>{status.name.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+            </div>
+           
+            <div>
+                <p className="font-semibold">{status.name}</p>
+                <p className="text-sm text-muted-foreground">{status.timestamp}</p>
+            </div>
         </div>
-       
-        <div>
-            <p className="font-semibold">{status.name}</p>
-            <p className="text-sm text-muted-foreground">{status.timestamp}</p>
-        </div>
-    </div>
+    </Link>
 );
 
 export default function StatusPage() {
