@@ -92,8 +92,9 @@ const ChatMessage = ({ message }: { message: (typeof messages)[0] }) => {
 
 export default function ChatPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
+  // Wallpaper state would be managed globally in a real app (e.g., Context, Redux, Zustand)
+  // For this example, we'll keep it simple and not persist it across pages.
   const [wallpaper, setWallpaper] = useState<string | null>(null);
 
   useEffect(() => {
@@ -101,21 +102,6 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     if (viewportRef.current) {
       viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
     }
-    // Load wallpaper from localStorage
-    const savedWallpaper = localStorage.getItem('chatWallpaper');
-    if (savedWallpaper) {
-        setWallpaper(savedWallpaper);
-    }
-
-    const handleStorageChange = () => {
-        const newWallpaper = localStorage.getItem('chatWallpaper');
-        setWallpaper(newWallpaper);
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-    };
   }, []);
 
   return (
@@ -157,7 +143,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                     className="opacity-20 dark:opacity-10"
                 />
             )}
-            <ScrollArea className="absolute inset-0" ref={scrollAreaRef} viewportRef={viewportRef}>
+            <ScrollArea className="absolute inset-0" viewportRef={viewportRef}>
                 <div className="p-4 space-y-4">
                 {messages.map((msg) => (
                     <ChatMessage key={msg.id} message={msg} />

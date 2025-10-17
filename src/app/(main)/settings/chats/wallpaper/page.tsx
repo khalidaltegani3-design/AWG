@@ -3,7 +3,7 @@
 import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,25 +21,15 @@ const defaultWallpapers = [
 export default function WallpaperPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const [currentWallpaper, setCurrentWallpaper] = useState<string | null>(null);
+    const [currentWallpaper, setCurrentWallpaper] = useState<string | null>(defaultWallpapers[0]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        const savedWallpaper = localStorage.getItem('chatWallpaper');
-        if (savedWallpaper) {
-            setCurrentWallpaper(savedWallpaper);
-        }
-    }, []);
-
     const handleSetWallpaper = (url: string) => {
-        localStorage.setItem('chatWallpaper', url);
         setCurrentWallpaper(url);
         toast({
-            title: "تم تغيير الخلفية",
-            description: "تم تحديث خلفية المحادثات بنجاح.",
+            title: "تم تحديث المعاينة",
+            description: "تم تحديث معاينة الخلفية.",
         });
-        // We use window.dispatchEvent to notify other tabs/windows if any
-        window.dispatchEvent(new Event('storage'));
     };
     
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,16 +48,33 @@ export default function WallpaperPage() {
         fileInputRef.current?.click();
     }
 
+    const handleApplyWallpaper = () => {
+        // In a real native app, you would save this preference to a database or native storage.
+        // For now, we'll just show a confirmation.
+        if (currentWallpaper) {
+            // We would need a global state management or a server call here.
+            // For example: updateChatWallpaper(currentWallpaper);
+            toast({
+                title: "تم تعيين الخلفية",
+                description: "سيتم تطبيق الخلفية الجديدة على محادثاتك.",
+            });
+            router.back();
+        }
+    }
+
     return (
         <div className="flex flex-col h-full bg-background">
-            <header className="flex items-center gap-4 p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
+            <header className="flex items-center justify-between gap-4 p-4 border-b bg-primary text-primary-foreground sticky top-0 z-10">
                 <Button variant="ghost" size="icon" onClick={() => router.back()} className="hover:bg-black/20">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <h1 className="text-xl font-bold">خلفية المحادثة</h1>
+                 <Button onClick={handleApplyWallpaper} className="bg-primary-foreground text-primary hover:bg-primary-foreground/90">
+                    تعيين
+                </Button>
             </header>
 
-            <div className="flex-grow p-4 space-y-6">
+            <div className="flex-grow p-4 space-y-6 overflow-y-auto">
                 <div>
                     <h2 className="text-lg font-semibold mb-3">المعاينة</h2>
                     <div className="relative aspect-[9/16] w-full max-w-sm mx-auto rounded-lg overflow-hidden bg-muted border">
@@ -80,8 +87,8 @@ export default function WallpaperPage() {
                             />
                         )}
                          <div className="absolute inset-0 flex flex-col p-4">
-                            <div className="p-3 rounded-xl bg-muted w-fit self-start shadow-md">
-                                <p className="text-sm">أهلاً بك</p>
+                            <div className="p-3 rounded-xl bg-card shadow-md w-fit self-start">
+                                <p className="text-sm text-card-foreground">أهلاً بك</p>
                             </div>
                              <div className="p-3 rounded-xl bg-green-200 dark:bg-green-900 w-fit self-end mt-2 shadow-md">
                                 <p className="text-sm">مرحباً! كيف حالك؟</p>
