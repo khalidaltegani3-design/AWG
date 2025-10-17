@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video, X, Flag, Ban, Bookmark, Link as LinkIcon, Plus, Check } from 'lucide-react';
+import { Heart, MessageCircle, Send, MoreVertical, Music, Camera, Upload, Video, X, Flag, Ban, Bookmark, Link as LinkIcon, Plus, Check, Play } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -50,7 +50,7 @@ type Blink = {
     name: string;
     avatar: string;
   };
-  videoUrl: string; // For now, we'll use an image placeholder
+  videoUrl: string; 
   description: string;
   song: string;
   likes: number;
@@ -68,7 +68,7 @@ const initialBlinks: Blink[] = [
       name: '@nawaf_dev',
       avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
     },
-    videoUrl: 'https://images.pexels.com/videos/3254013/free-video-3254013.jpg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    videoUrl: 'https://videos.pexels.com/video-files/3254013/3254013-hd_720_1366_25fps.mp4',
     description: 'أجواء خيالية في نيوم! #نيوم #السعودية',
     song: 'Original Sound - nawaf_dev',
     likes: 1250,
@@ -87,7 +87,7 @@ const initialBlinks: Blink[] = [
       name: '@travel_lover',
       avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026705d',
     },
-    videoUrl: 'https://images.pexels.com/videos/857100/free-video-857100.jpg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    videoUrl: 'https://videos.pexels.com/video-files/857100/857100-hd_720_1366_25fps.mp4',
     description: 'استكشاف شوارع طوكيو ليلاً 🍜🏮',
     song: 'Tokyo Drift - Teriyaki Boyz',
     likes: 3400,
@@ -103,7 +103,7 @@ const initialBlinks: Blink[] = [
       name: '@food_critic',
       avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026707d',
     },
-    videoUrl: 'https://images.pexels.com/videos/3773340/free-video-3773340.jpg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+    videoUrl: 'https://videos.pexels.com/video-files/3773340/3773340-hd_720_1366_25fps.mp4',
     description: 'أسهل طريقة لعمل القهوة المختصة في البيت ☕️',
     song: 'Morning Coffee - Jazzy Tunes',
     likes: 876,
@@ -118,98 +118,128 @@ const initialBlinks: Blink[] = [
 ];
 
 
-const BlinkItem = ({ blink, onLike, onFollow, onCommentClick, onShareClick, onMoreOptionsClick }: { blink: Blink, onLike: (id: string) => void, onFollow: (id: string) => void, onCommentClick: (blink: Blink) => void, onShareClick: (blink: Blink) => void, onMoreOptionsClick: (action: string) => void }) => (
-    <div className="relative h-full w-full snap-start flex-shrink-0">
-        {/* In a real app, this would be a <video> element */}
-        <img src={blink.videoUrl} alt={blink.description} className="h-full w-full object-cover" />
+const BlinkItem = ({ blink, onLike, onFollow, onCommentClick, onShareClick, onMoreOptionsClick }: { blink: Blink, onLike: (id: string) => void, onFollow: (id: string) => void, onCommentClick: (blink: Blink) => void, onShareClick: (blink: Blink) => void, onMoreOptionsClick: (action: string) => void }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [isPaused, setIsPaused] = useState(false);
+    
+    const handleVideoClick = () => {
+        if (videoRef.current) {
+            if (videoRef.current.paused) {
+                videoRef.current.play();
+                setIsPaused(false);
+            } else {
+                videoRef.current.pause();
+                setIsPaused(true);
+            }
+        }
+    };
+    
+    return (
+        <div className="relative h-full w-full snap-start flex-shrink-0" onClick={handleVideoClick}>
+            <video 
+                ref={videoRef}
+                src={blink.videoUrl} 
+                className="h-full w-full object-cover" 
+                loop 
+                playsInline
+                autoPlay
+                muted // Muted is often required for autoplay in browsers
+            />
 
-        {/* Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent">
-            <div className="flex items-end">
-                {/* Left side: Video Info */}
-                <div className="flex-grow space-y-2 text-white">
-                    <div className="flex items-center gap-3">
-                         <div className="relative">
-                             <Link href="/profile">
-                                <Avatar className="h-12 w-12 border-2">
-                                    <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
-                                    <AvatarFallback>{blink.user.name.substring(1, 3)}</AvatarFallback>
-                                </Avatar>
+            {isPaused && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                    <Play className="h-20 w-20 text-white/70" />
+                </div>
+            )}
+
+            {/* Overlay */}
+            <div className="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
+                <div className="flex items-end">
+                    {/* Left side: Video Info */}
+                    <div className="flex-grow space-y-2 text-white">
+                        <div className="flex items-center gap-3">
+                             <div className="relative pointer-events-auto">
+                                 <Link href="/profile" onClick={(e) => e.stopPropagation()}>
+                                    <Avatar className="h-12 w-12 border-2">
+                                        <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
+                                        <AvatarFallback>{blink.user.name.substring(1, 3)}</AvatarFallback>
+                                    </Avatar>
+                                </Link>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); onFollow(blink.id); }}
+                                    className={cn("absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all",
+                                        blink.isFollowing ? "bg-muted text-muted-foreground" : "bg-red-500 text-white"
+                                    )}
+                                >
+                                    {blink.isFollowing ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                                </button>
+                            </div>
+                            <Link href="/profile" className="pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                               <p className="font-semibold">{blink.user.name}</p>
                             </Link>
-                            <button 
-                                onClick={() => onFollow(blink.id)}
-                                className={cn("absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all",
-                                    blink.isFollowing ? "bg-muted text-muted-foreground" : "bg-red-500 text-white"
-                                )}
-                            >
-                                {blink.isFollowing ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                            </button>
                         </div>
-                        <Link href="/profile">
-                           <p className="font-semibold">{blink.user.name}</p>
+                        <p className="text-sm">{blink.description}</p>
+                        <div className="flex items-center gap-2 text-xs">
+                            <Music className="h-4 w-4" />
+                            <p>{blink.song}</p>
+                        </div>
+                    </div>
+
+                    {/* Right side: Action Buttons */}
+                    <div className="flex flex-col items-center gap-4 text-white pointer-events-auto">
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white"
+                            onClick={(e) => { e.stopPropagation(); onLike(blink.id); }}
+                        >
+                            <Heart className={cn("h-8 w-8", blink.isLiked && "fill-red-500 text-red-500")} />
+                            <span className="text-xs font-bold">{blink.likes > 1000 ? `${(blink.likes/1000).toFixed(1)}k` : blink.likes}</span>
+                        </Button>
+                         <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white" onClick={(e) => { e.stopPropagation(); onCommentClick(blink); }}>
+                            <MessageCircle className="h-8 w-8" />
+                            <span className="text-xs font-bold">{blink.comments}</span>
+                        </Button>
+                         <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white" onClick={(e) => { e.stopPropagation(); onShareClick(blink); }}>
+                            <Send className="h-8 w-8" />
+                            <span className="text-xs font-bold">{blink.shares}</span>
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2" onClick={(e) => e.stopPropagation()}>
+                                    <MoreVertical className="h-8 w-8" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="bg-background border-muted text-foreground">
+                                <DropdownMenuItem onClick={() => onMoreOptionsClick('report')}>
+                                    <Flag className="ml-2 h-4 w-4" />
+                                    <span>إبلاغ</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => onMoreOptionsClick('not-interested')}>
+                                    <Ban className="ml-2 h-4 w-4" />
+                                    <span>غير مهتم</span>
+                                </DropdownMenuItem>
+                                 <DropdownMenuItem onClick={() => onMoreOptionsClick('save')}>
+                                    <Bookmark className="ml-2 h-4 w-4" />
+                                    <span>حفظ الفيديو</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => onMoreOptionsClick('copy-link')}>
+                                    <LinkIcon className="ml-2 h-4 w-4" />
+                                    <span>نسخ الرابط</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Link href="/blinks/create" onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
+                               <Camera className="h-8 w-8" />
+                           </Button>
                         </Link>
                     </div>
-                    <p className="text-sm">{blink.description}</p>
-                    <div className="flex items-center gap-2 text-xs">
-                        <Music className="h-4 w-4" />
-                        <p>{blink.song}</p>
-                    </div>
-                </div>
-
-                {/* Right side: Action Buttons */}
-                <div className="flex flex-col items-center gap-4 text-white">
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white"
-                        onClick={() => onLike(blink.id)}
-                    >
-                        <Heart className={cn("h-8 w-8", blink.isLiked && "fill-red-500 text-red-500")} />
-                        <span className="text-xs font-bold">{blink.likes > 1000 ? `${(blink.likes/1000).toFixed(1)}k` : blink.likes}</span>
-                    </Button>
-                     <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white" onClick={() => onCommentClick(blink)}>
-                        <MessageCircle className="h-8 w-8" />
-                        <span className="text-xs font-bold">{blink.comments}</span>
-                    </Button>
-                     <Button variant="ghost" size="icon" className="h-auto flex-col gap-1 p-0 text-white hover:bg-white/10 hover:text-white" onClick={() => onShareClick(blink)}>
-                        <Send className="h-8 w-8" />
-                        <span className="text-xs font-bold">{blink.shares}</span>
-                    </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
-                                <MoreVertical className="h-8 w-8" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-background border-muted text-foreground">
-                            <DropdownMenuItem onClick={() => onMoreOptionsClick('report')}>
-                                <Flag className="ml-2 h-4 w-4" />
-                                <span>إبلاغ</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onMoreOptionsClick('not-interested')}>
-                                <Ban className="ml-2 h-4 w-4" />
-                                <span>غير مهتم</span>
-                            </DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => onMoreOptionsClick('save')}>
-                                <Bookmark className="ml-2 h-4 w-4" />
-                                <span>حفظ الفيديو</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onMoreOptionsClick('copy-link')}>
-                                <LinkIcon className="ml-2 h-4 w-4" />
-                                <span>نسخ الرابط</span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Link href="/blinks/create">
-                        <Button variant="ghost" size="icon" className="h-auto p-0 text-white hover:bg-white/10 hover:text-white mt-2">
-                           <Camera className="h-8 w-8" />
-                       </Button>
-                    </Link>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+}
 
 
 export default function BlinksPage() {
