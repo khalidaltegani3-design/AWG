@@ -3,41 +3,38 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Camera, Image as ImageIcon } from 'lucide-react';
+import { Camera, Image as ImageIcon, Pencil } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-const CreateStatusDialog = ({ children }: { children: React.ReactNode }) => (
-    <Dialog>
-        <DialogTrigger asChild>
+const CreateStatusPopover = ({ children }: { children: React.ReactNode }) => (
+    <Popover>
+        <PopoverTrigger asChild>
             {children}
-        </DialogTrigger>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>إنشاء حالة جديدة</DialogTitle>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 pt-4">
-                <Link href="/status/create" className="w-full h-full">
-                    <Button variant="outline" className="flex flex-col h-28 gap-2 w-full">
+        </PopoverTrigger>
+        <PopoverContent side="top" align="center" className="w-auto p-2 mb-2 bg-background/80 backdrop-blur-sm border-muted">
+            <div className="flex gap-4">
+                <Link href="/status/create">
+                    <Button variant="outline" className="flex flex-col h-20 w-20 gap-2">
                         <ImageIcon className="h-8 w-8" />
-                        <span>الرفع من المعرض</span>
+                        <span>المعرض</span>
                     </Button>
                 </Link>
-                <Link href="/status/create" className="w-full h-full">
-                    <Button variant="outline" className="flex flex-col h-28 gap-2 w-full">
+                <Link href="/status/create">
+                     <Button variant="outline" className="flex flex-col h-20 w-20 gap-2">
                         <Camera className="h-8 w-8" />
-                        <span>استخدام الكاميرا</span>
+                        <span>الكاميرا</span>
                     </Button>
                 </Link>
             </div>
-        </DialogContent>
-    </Dialog>
+        </PopoverContent>
+    </Popover>
 );
 
 
 const MyStatus = () => (
-    <CreateStatusDialog>
+    <Link href="/status/create">
         <div className="flex items-center gap-4 p-4 hover:bg-muted cursor-pointer">
             <div className="relative">
                 <Avatar className="h-14 w-14">
@@ -53,7 +50,7 @@ const MyStatus = () => (
                 <p className="text-muted-foreground">اضغط لإضافة حالة جديدة</p>
             </div>
         </div>
-    </CreateStatusDialog>
+    </Link>
 );
 
 type Status = {
@@ -114,11 +111,11 @@ export default function StatusPage() {
       </div>
 
        <div className="absolute bottom-20 right-4 flex flex-col gap-4 z-20">
-            <CreateStatusDialog>
-                <Button size="icon" className="rounded-full h-12 w-12 bg-secondary text-secondary-foreground shadow-lg hover:bg-secondary/90">
-                    <Camera className="h-6 w-6" />
+            <CreateStatusPopover>
+                <Button size="icon" className="rounded-full h-14 w-14 bg-secondary text-secondary-foreground shadow-lg hover:bg-secondary/90">
+                    <Camera className="h-7 w-7" />
                 </Button>
-            </CreateStatusDialog>
+            </CreateStatusPopover>
       </div>
     </div>
   );
