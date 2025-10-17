@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -30,6 +31,13 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
+           <Image
+            src="/shamil-logo.png"
+            alt="Shamil Logo"
+            width={100}
+            height={100}
+            className="mx-auto mb-4 rounded-full"
+          />
           <CardTitle className="text-2xl">أدخل رقم هاتفك</CardTitle>
           <CardDescription>
             سوف نرسل لك رمز تحقق عبر رسالة نصية قصيرة.
@@ -40,7 +48,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <Label htmlFor="phone">رقم الهاتف</Label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-input bg-secondary text-sm">
+                <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-input bg-muted text-sm">
                   +974
                 </span>
                 <Input

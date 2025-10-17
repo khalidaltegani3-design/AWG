@@ -13,16 +13,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 173 58% 39%; /* #2A9D8F */
+    --primary: 221 83% 53%; /* New Blue from Logo */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 43 74% 66%; /* #E9C46A */
+    --secondary: 188 82% 52%; /* New Cyan from Logo */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 15 78% 61%; /* #E76F51 */
+    --accent: 188 82% 52%; /* New Cyan from Logo */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
@@ -30,7 +30,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 173 58% 39%;
+    --ring: 221 83% 53%; /* New Blue from Logo */
 
     --radius: 0.5rem;
   }
@@ -45,16 +45,16 @@
     --popover: 0 0% 11.8%; /* #1E1E1E */
     --popover-foreground: 210 40% 98%;
 
-    --primary: 173 58% 39%; /* #2A9D8F */
+    --primary: 221 83% 53%; /* New Blue from Logo */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 43 74% 66%; /* #E9C46A */
+    --secondary: 188 82% 52%; /* New Cyan from Logo */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 0 0% 11.8%; /* #1E1E1E */
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 15 78% 61%; /* #E76F51 */
+    --accent: 188 82% 52%; /* New Cyan from Logo */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -62,7 +62,7 @@
 
     --border: 0 0% 11.8%; /* #1E1E1E */
     --input: 0 0% 11.8%; /* #1E1E1E */
-    --ring: 173 58% 39%;
+    --ring: 221 83% 53%; /* New Blue from Logo */
   }
 }
 
