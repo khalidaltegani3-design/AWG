@@ -74,3 +74,12 @@
     @apply bg-muted text-foreground;
   }
 }
+
+@layer utilities {
+  .filter-none { filter: none; }
+  .filter-grayscale { filter: grayscale(100%); }
+  .filter-sepia { filter: sepia(100%); }
+  .filter-saturate { filter: saturate(200%); }
+  .filter-invert { filter: invert(100%); }
+  .filter-vintage { filter: sepia(60%) contrast(110%) brightness(90%) saturate(130%); }
+}

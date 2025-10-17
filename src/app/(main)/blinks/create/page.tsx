@@ -60,6 +60,40 @@ const TimerControl = ({ onSelect, currentTimer }: { onSelect: (timer: number) =>
     )
 };
 
+const filters = [
+    { name: 'بدون', class: 'filter-none' },
+    { name: 'أبيض وأسود', class: 'filter-grayscale' },
+    { name: 'بني داكن', class: 'filter-sepia' },
+    { name: 'مُشبَّع', class: 'filter-saturate' },
+    { name: 'عتيق', class: 'filter-vintage' },
+    { name: 'معكوس', class: 'filter-invert' },
+];
+
+const FilterControl = ({ onSelect, currentFilter }: { onSelect: (filterClass: string) => void, currentFilter: string }) => {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="ghost" className={cn("flex flex-col items-center h-auto text-white hover:bg-black/20 p-2", currentFilter !== 'filter-none' && 'text-secondary')}>
+                    <Sparkles className="h-7 w-7" />
+                    <span className="text-xs mt-1">المؤثرات</span>
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent side="left" className="w-auto p-2 bg-black/50 border-white/20 text-white grid grid-cols-3 gap-2">
+                {filters.map(filter => (
+                    <Button 
+                        key={filter.class} 
+                        variant={currentFilter === filter.class ? 'secondary' : 'ghost'} 
+                        onClick={() => onSelect(filter.class)}
+                        className="flex flex-col h-auto text-xs p-2"
+                    >
+                         <div className={cn("w-12 h-12 rounded-md mb-1", filter.class)} style={{ backgroundImage: 'url(https://i.pravatar.cc/150?u=a042581f4e29026704d)', backgroundSize: 'cover' }}></div>
+                        {filter.name}
+                    </Button>
+                ))}
+            </PopoverContent>
+        </Popover>
+    )
+}
 
 export default function CreateBlinkPage() {
   const router = useRouter();
@@ -68,7 +102,7 @@ export default function CreateBlinkPage() {
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
   const [speed, setSpeed] = useState(1);
   const [timer, setTimer] = useState(0);
-  const [effectsActive, setEffectsActive] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('filter-none');
   const [isAiBackgroundActive, setIsAiBackgroundActive] = useState(false);
   const { toast } = useToast();
 
@@ -112,7 +146,7 @@ export default function CreateBlinkPage() {
     <div className="relative h-full w-full bg-black text-white flex flex-col">
       {/* Camera View */}
       <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
-            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+            <video ref={videoRef} className={cn("w-full h-full object-cover", activeFilter)} autoPlay muted playsInline />
             {!hasCameraPermission && (
                  <div className="absolute z-20 p-4">
                     <Alert variant="destructive">
@@ -141,7 +175,7 @@ export default function CreateBlinkPage() {
         <CameraToolButton icon={FlipHorizontal} label="قلب" onClick={handleFlipCamera} />
         <SpeedControl onSelect={setSpeed} currentSpeed={speed} />
         <TimerControl onSelect={setTimer} currentTimer={timer} />
-        <CameraToolButton icon={Sparkles} label="المؤثرات" onClick={() => setEffectsActive(prev => !prev)} active={effectsActive} />
+        <FilterControl onSelect={setActiveFilter} currentFilter={activeFilter} />
         <CameraToolButton icon={UserSquare} label="خلفية AI" onClick={() => setIsAiBackgroundActive(prev => !prev)} active={isAiBackgroundActive} />
       </aside>
 
