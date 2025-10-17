@@ -124,13 +124,15 @@ const BlinkItem = ({ blink, onLike, onCommentClick, onShareClick, onMoreOptionsC
             <div className="flex items-end">
                 {/* Left side: Video Info */}
                 <div className="flex-grow space-y-2 text-white">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-10 w-10 border-2">
-                            <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
-                            <AvatarFallback>{blink.user.name.substring(1, 3)}</AvatarFallback>
-                        </Avatar>
-                        <p className="font-semibold">{blink.user.name}</p>
-                    </div>
+                    <Link href="/settings/profile" className="inline-block">
+                        <div className="flex items-center gap-2">
+                            <Avatar className="h-10 w-10 border-2">
+                                <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
+                                <AvatarFallback>{blink.user.name.substring(1, 3)}</AvatarFallback>
+                            </Avatar>
+                            <p className="font-semibold">{blink.user.name}</p>
+                        </div>
+                    </Link>
                     <p className="text-sm">{blink.description}</p>
                     <div className="flex items-center gap-2 text-xs">
                         <Music className="h-4 w-4" />
@@ -431,3 +433,5 @@ export default function BlinksPage() {
     </div>
   );
 }
+
+    
