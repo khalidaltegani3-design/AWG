@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'Shamil App',
@@ -13,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <meta
           name="viewport"
@@ -21,10 +22,17 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-muted">
-        <div className="relative mx-auto flex min-h-screen max-w-md flex-col bg-background shadow-2xl">
-          {children}
-          <Toaster />
-        </div>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="relative mx-auto flex min-h-screen max-w-md flex-col bg-background shadow-2xl">
+            {children}
+            <Toaster />
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

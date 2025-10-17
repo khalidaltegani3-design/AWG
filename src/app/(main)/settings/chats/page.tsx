@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, ChevronLeft, Sun, Moon, Laptop, Wallpaper, Send, Download, Archive, Trash2, Eraser, Eye } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Laptop, Wallpaper } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import Link from 'next/link';
-
-type ThemeOption = "light" | "dark" | "system";
+import { useTheme } from 'next-themes';
 
 const SettingsActionItem = ({ icon: Icon, title, description, actionText, onActionClick }: { icon: React.ElementType; title: string; description?: string; actionText: string; onActionClick?: () => void; }) => (
     <div className="flex items-center gap-6 p-4">
@@ -37,7 +35,7 @@ const SettingsToggleItem = ({ title, description, checked, onCheckedChange }: { 
 
 export default function ChatSettingsPage() {
     const router = useRouter();
-    const [theme, setTheme] = useState<ThemeOption>('system');
+    const { theme, setTheme } = useTheme();
     const [enterIsSend, setEnterIsSend] = useState(true);
     const [mediaVisibility, setMediaVisibility] = useState(true);
 
@@ -54,7 +52,7 @@ export default function ChatSettingsPage() {
             <div className="p-4">
                 <h3 className="text-lg font-semibold text-primary mb-4">العرض</h3>
                 <div className="space-y-4">
-                    <RadioGroup value={theme} onValueChange={(v: ThemeOption) => setTheme(v)}>
+                    <RadioGroup value={theme} onValueChange={(v) => setTheme(v)}>
                         <Label className="text-base">السمة</Label>
                         <div className="flex justify-around pt-2">
                              <Label htmlFor="theme-light" className="flex flex-col items-center gap-2 cursor-pointer">
@@ -114,4 +112,3 @@ export default function ChatSettingsPage() {
     </div>
   );
 }
-
