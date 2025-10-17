@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -55,7 +56,7 @@ export function Notifications() {
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-black/20">
                     <Bell className="h-6 w-6" />
                 </Button>
             </DropdownMenuTrigger>
