@@ -123,9 +123,16 @@ export default function CreateBlinkPage() {
   const { toast } = useToast();
 
     useEffect(() => {
-    let stream: MediaStream;
+    let stream: MediaStream | null = null;
     
-    if (generatedImage) return;
+    if (generatedImage) {
+        // If an AI image is generated, stop any active stream.
+        if (videoRef.current && videoRef.current.srcObject) {
+            (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+            videoRef.current.srcObject = null;
+        }
+        return;
+    }
 
     const getCameraPermission = async () => {
       try {
@@ -151,6 +158,11 @@ export default function CreateBlinkPage() {
     return () => {
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
+        }
+        // Also clear srcObject on cleanup
+        if (videoRef.current && videoRef.current.srcObject) {
+            (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+            videoRef.current.srcObject = null;
         }
     };
   }, [facingMode, toast, generatedImage]);
@@ -178,11 +190,29 @@ export default function CreateBlinkPage() {
     setGeneratedImage(null);
 
     const video = videoRef.current;
+    // Ensure video is playing to have a valid frame, even if it's not visible
+    if(video.paused) {
+        try {
+            await video.play();
+        } catch (error) {
+            console.error("Video play failed:", error);
+            toast({ variant: 'destructive', title: 'فشل تشغيل الفيديو', description: 'لا يمكن التقاط إطار. حاول مرة أخرى.' });
+            setIsGenerating(false);
+            return;
+        }
+    }
+
+
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const context = canvas.getContext('2d');
     if (context) {
+        // Flip the image horizontally if the user is using the front camera
+        if(facingMode === 'user') {
+            context.translate(canvas.width, 0);
+            context.scale(-1, 1);
+        }
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageDataUri = canvas.toDataURL('image/jpeg');
         
@@ -192,6 +222,8 @@ export default function CreateBlinkPage() {
         } catch (error) {
             console.error("AI background generation failed:", error);
             toast({ variant: 'destructive', title: 'فشل توليد الخلفية', description: 'حدث خطأ أثناء محاولة إنشاء الخلفية. يرجى المحاولة مرة أخرى.' });
+        } finally {
+            if (video.paused) video.pause(); // Pause it back if it was paused
         }
     }
 
@@ -202,9 +234,9 @@ export default function CreateBlinkPage() {
     <div className="relative h-full w-full bg-black text-white flex flex-col">
       <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
             {generatedImage ? (
-                <Image src={generatedImage} alt="Generated background" fill objectFit="cover" className={cn(activeFilter)} />
+                <Image src={generatedImage} alt="Generated background" fill style={{objectFit:"cover"}} className={cn(activeFilter)} />
             ) : (
-                <video ref={videoRef} className={cn("w-full h-full object-cover", activeFilter)} autoPlay muted playsInline />
+                <video ref={videoRef} className={cn("w-full h-full object-cover", activeFilter, facingMode === 'user' && 'scale-x-[-1]')} autoPlay muted playsInline />
             )}
             {!hasCameraPermission && !generatedImage && (
                  <div className="absolute z-20 p-4">
@@ -284,15 +316,15 @@ export default function CreateBlinkPage() {
             </div>
         ) : (
             <div className="flex items-center gap-16 w-full justify-center">
-                <Button variant="outline" className="h-16 w-16 bg-black/30 border-white/50 hover:bg-black/50 p-0">
-                    <GalleryVertical className="h-8 w-8" />
-                </Button>
-
+                <div className="h-16 w-16" />
+                
                 <div className="relative flex items-center justify-center h-24 w-24">
                     <button className="absolute h-20 w-20 bg-red-600 rounded-full border-4 border-white shadow-lg transition-transform active:scale-95" />
                 </div>
 
-                <div className="h-16 w-16" />
+                <Button variant="outline" className="h-16 w-16 bg-black/30 border-white/50 hover:bg-black/50 p-0">
+                    <GalleryVertical className="h-8 w-8" />
+                </Button>
             </div>
         )}
       </footer>
