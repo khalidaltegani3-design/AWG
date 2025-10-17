@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, UserSquare, Search, Play, Check } from 'lucide-react';
+import { X, Music, FlipHorizontal, Gauge, Timer, Sparkles, UserSquare, Search, Play, Check, GalleryVertical } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -230,7 +230,7 @@ export default function CreateBlinkPage() {
       <footer className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center p-6">
         <div className="flex items-center gap-16 w-full justify-center">
             <Button variant="outline" className="h-16 w-16 bg-black/30 border-white/50 hover:bg-black/50 p-0">
-                GalleryVertical className="h-8 w-8" />
+                <GalleryVertical className="h-8 w-8" />
             </Button>
 
             <div className="relative flex items-center justify-center h-24 w-24">
@@ -243,3 +243,5 @@ export default function CreateBlinkPage() {
     </div>
   );
 }
+
+    
