@@ -32,7 +32,19 @@ const nextConfig: NextConfig = {
         hostname: 'commondatastorage.googleapis.com',
         port: '',
         pathname: '/**',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        port: '',
+        pathname: '/**',
+      },
+       {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+        port: '',
+        pathname: '/**',
+      },
     ],
     // Allow blob URLs for image previews
     domains: ['blob'],
