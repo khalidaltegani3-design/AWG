@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowLeft, ChevronLeft, ShieldCheck, KeyRound, Phone } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ShieldCheck, KeyRound, Phone, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -51,7 +51,7 @@ export default function AccountSettingsPage() {
                 icon={KeyRound}
                 title="الأمان"
                 description="التحقق بخطوتين، إشعارات الأمان"
-                href="#"
+                href="/settings/account/security"
             />
             <Separator />
              <AccountSettingItem 
@@ -59,6 +59,12 @@ export default function AccountSettingsPage() {
                 title="تغيير الرقم"
                 description="نقل معلومات الحساب إلى رقم جديد"
                 href="/settings/account/change-number"
+            />
+             <AccountSettingItem 
+                icon={FileText}
+                title="طلب معلومات الحساب"
+                description="احصل على تقرير بمعلومات حسابك"
+                href="#"
             />
         </div>
     </div>
