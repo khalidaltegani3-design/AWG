@@ -135,7 +135,7 @@ const BlinkItem = ({ blink, onLike, onFollow, onCommentClick, onShareClick, onMo
     };
     
     return (
-        <div className="relative h-full w-full snap-start flex-shrink-0" onClick={handleVideoClick}>
+        <div className="relative h-full w-full snap-start flex-shrink-0">
             <video 
                 ref={videoRef}
                 src={blink.videoUrl} 
@@ -144,6 +144,7 @@ const BlinkItem = ({ blink, onLike, onFollow, onCommentClick, onShareClick, onMo
                 playsInline
                 autoPlay
                 muted // Muted is often required for autoplay in browsers
+                onClick={handleVideoClick}
             />
 
             {isPaused && (
@@ -156,9 +157,9 @@ const BlinkItem = ({ blink, onLike, onFollow, onCommentClick, onShareClick, onMo
             <div className="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
                 <div className="flex items-end">
                     {/* Left side: Video Info */}
-                    <div className="flex-grow space-y-2 text-white">
+                    <div className="flex-grow space-y-2 text-white pointer-events-auto">
                         <div className="flex items-center gap-3">
-                             <div className="relative pointer-events-auto">
+                             <div className="relative">
                                  <Link href="/profile" onClick={(e) => e.stopPropagation()}>
                                     <Avatar className="h-12 w-12 border-2">
                                         <AvatarImage src={blink.user.avatar} alt={blink.user.name} />
@@ -174,7 +175,7 @@ const BlinkItem = ({ blink, onLike, onFollow, onCommentClick, onShareClick, onMo
                                     {blink.isFollowing ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                                 </button>
                             </div>
-                            <Link href="/profile" className="pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                            <Link href="/profile" onClick={(e) => e.stopPropagation()}>
                                <p className="font-semibold">{blink.user.name}</p>
                             </Link>
                         </div>
